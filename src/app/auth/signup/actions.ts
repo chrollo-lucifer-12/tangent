@@ -1,28 +1,23 @@
-import {z} from "zod";
-import {formSchema} from "@/utils/constants";
+"use server"
 import {createClient} from "@/utils/supabase/server";
 import {redirect} from "next/navigation";
-import {revalidatePath} from "next/cache";
+import {z} from "zod";
+import {signupSchema} from "@/utils/constants";
 
-export async function signup(formData : z.infer<typeof formSchema>) {
+export async function signup(formData : z.infer<typeof signupSchema>) {
     const supabase = await createClient();
 
-    const data = {
-        email : formData.email as string,
-        password: formData.password as string
-    }
-
-    console.log(data);
-
-    const {error} = await supabase.auth.signUp(data);
+    const {  error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+    })
 
     if (error) {
-        console.log(error);
-        redirect('/error');
+        return error.message;
     }
-    revalidatePath("/", "layout")
-    redirect("/");
 }
+
+
 
 export async function loginGithub() {
     const supabase = await createClient();

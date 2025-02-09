@@ -68,6 +68,7 @@ export const users = pgTable("users", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	paymentMethod: jsonb("payment_method"),
 	email: text(),
+	password: text()
 }, (table) => [
 	foreignKey({
 			columns: [table.id],

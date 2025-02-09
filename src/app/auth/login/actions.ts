@@ -1,7 +1,5 @@
 "use server"
-
 import { createClient } from '@/utils/supabase/server'
-import {revalidatePath} from "next/cache";
 import {redirect} from "next/navigation";
 import {formSchema} from "@/utils/constants";
 import {z} from "zod";
@@ -10,19 +8,16 @@ import {z} from "zod";
 export async function login(formData : z.infer<typeof formSchema>) {
     const supabase = await createClient();
 
-    const data = {
-        email : formData.email as string,
-        password: formData.password as string
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+    })
+
+    if (error){
+        return error.message
     }
 
-    const {error} = await supabase.auth.signInWithPassword(data);
-
-    if (error) {
-        console.log(error);
-        redirect('/error');
-    }
-    revalidatePath("/dashboard", "layout")
-    redirect("/dashboard");
+    redirect("/dashboard")
 }
 
 export async function loginGithub() {
@@ -36,4 +31,9 @@ export async function loginGithub() {
     if (data.url) {
         redirect(data.url)
     }
+}
+
+export async function updatePassword(email : string) {
+    const supabase = await createClient();
+    await supabase.auth.resetPasswordForEmail(email, {redirectTo: "/auth/update-password"})
 }
