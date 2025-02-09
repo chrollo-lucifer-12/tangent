@@ -1,13 +1,10 @@
-"use server"
-
-import { createClient } from '@/utils/supabase/server'
-import {revalidatePath} from "next/cache";
-import {redirect} from "next/navigation";
-import {formSchema} from "@/utils/constants";
 import {z} from "zod";
+import {formSchema} from "@/utils/constants";
+import {createClient} from "@/utils/supabase/server";
+import {redirect} from "next/navigation";
+import {revalidatePath} from "next/cache";
 
-
-export async function login(formData : z.infer<typeof formSchema>) {
+export async function signup(formData : z.infer<typeof formSchema>) {
     const supabase = await createClient();
 
     const data = {
@@ -15,14 +12,16 @@ export async function login(formData : z.infer<typeof formSchema>) {
         password: formData.password as string
     }
 
-    const {error} = await supabase.auth.signInWithPassword(data);
+    console.log(data);
+
+    const {error} = await supabase.auth.signUp(data);
 
     if (error) {
         console.log(error);
         redirect('/error');
     }
-    revalidatePath("/dashboard", "layout")
-    redirect("/dashboard");
+    revalidatePath("/", "layout")
+    redirect("/");
 }
 
 export async function loginGithub() {
