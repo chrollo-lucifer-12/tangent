@@ -77,3 +77,12 @@ export const subscriptions = pgTable("subscriptions", {
     }),
     pgPolicy("Can only view own subs data.", { as: "permissive", for: "select", to: ["public"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
 ]);
+
+export const collaborators = pgTable("collaborators", {
+    workspaceId : uuid("workspace_id").notNull().references(()=>workspaces.id,{onDelete: "cascade"}),
+    createdAt: timestamp("created_at",{
+        withTimezone: true,
+        mode: "string"
+    }).defaultNow().notNull(),
+    userId: uuid("user_id").notNull().references(()=>users.id, {onDelete: "cascade"})
+})

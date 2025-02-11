@@ -16,6 +16,8 @@ const DashBoard = async () => {
         where: (workspace, {eq}) => eq(workspace.workspaceOwner, user.id)
     });
 
+
+
     if (!workspace) {
         return <div className="h-screen w-screen flex justify-center items-center">
             <DashboardSetup userId={user.id} />

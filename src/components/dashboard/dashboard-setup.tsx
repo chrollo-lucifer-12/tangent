@@ -1,12 +1,12 @@
 "use client";
-import { v4 } from 'uuid';
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { workspaceSchema } from "@/utils/constants";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import React, { useState } from "react";
 import {createWorkspace} from "@/utils/supabase/queries";
 import {redirect} from "next/navigation";
 

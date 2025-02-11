@@ -3,6 +3,7 @@ import {createClient} from "@/utils/supabase/server";
 import {redirect} from "next/navigation";
 import {z} from "zod";
 import {signupSchema} from "@/utils/constants";
+import {v4} from "uuid";
 
 export async function signup(formData : z.infer<typeof signupSchema>) {
     const supabase = await createClient();
@@ -46,19 +47,26 @@ export async function checkEmailVerified() {
 
 export async function updateInfo(avatarUrl : string, full_name : string) {
     const supabase = await createClient();
-    const {data} = await supabase.auth.getUser()
+    const {data} = await supabase.auth.getUser();
     if (!data.user) {
         return "User not found";
     }
-    const {error} = await supabase.from("users").update({
-        full_name,
-        avatar_url: avatarUrl
-    }).eq("id", data.user.id);
+    const avatarId = v4()
+    let filePath = null;
 
-    if (error) {
-        return error.message
+    {
+
+        const {data, error} = await supabase.storage.from("logos").upload(`user/${avatarId}.png`, avatarUrl);
+
+        if (error) {
+            return error.message
+        }
+
+        filePath = data.path;
     }
-    else {
-        redirect("/dashboard");
-    }
+    await supabase.from("users").update({
+        full_name,
+        avatar_url: filePath
+    }).eq("id", data.user.id);
+    redirect("/dashboard");
 }

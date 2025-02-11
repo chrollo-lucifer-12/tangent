@@ -1,9 +1,13 @@
 "use server"
 
-import {v4} from "uuid";
+import {v4, validate} from "uuid";
 import {createClient} from "@/utils/supabase/server";
 import db from "@/lib/supabase/db";
-import {workspaces} from "../../../migrations/schema";
+import {workspaces, folders, users} from "../../../migrations/schema";
+import {and, eq, notExists} from "drizzle-orm";
+import {collaborators} from "@/lib/supabase/schema";
+import {Folder, Subscription, workspace} from "../../lib/supabase/supabase.types";
+import logger from "@/lib/logger";
 
 export async function createWorkspace(workspaceName : string, file : any, userId : string) {
     const workspaceUUID = v4();
@@ -34,4 +38,111 @@ export async function createWorkspace(workspaceName : string, file : any, userId
         console.log(e);
         return {success : false};
     }
+}
+
+export async function getUserSubscriptionStatus (userId : string) {
+    try {
+        const data = await db.query.subscriptions.findFirst({
+            where: (s,{eq}) => eq(s.userId, userId)
+        })
+
+        if (data) return {data : data as Subscription, error : null};
+        else return {data : null, error : null}
+    } catch (e) {
+        console.log(e);
+        return {data : null, error : "Something went wrong"};
+    }
+}
+
+export async function getFolders (workspaceId : string) {
+    const isValid = validate(workspaceId);
+    if (!isValid)
+        return {
+            data: null,
+            error: 'Error',
+        };
+
+    try {
+        const results: Folder[] | [] = await db
+            .select()
+            .from(folders)
+            .orderBy(folders.createdAt)
+            .where(eq(folders.workspaceId, workspaceId));
+        return { data: results, error: null };
+    } catch (error) {
+        return { data: null, error: 'Error' };
+    }
+}
+
+export async function getPrivateWorkspaces (userId : string) {
+    if (!userId) return [];
+
+    const privateWorkspaces = (await db
+        .select({
+            id: workspaces.id,
+            createdAt: workspaces.createdAt,
+            workspaceOwner: workspaces.workspaceOwner,
+            title: workspaces.title,
+            iconId: workspaces.iconId,
+            data: workspaces.data,
+            inTrash: workspaces.inTrash,
+            logo: workspaces.logo,
+            bannerUrl: workspaces.bannerUrl,
+        })
+        .from(workspaces)
+        .where(
+            and(
+                notExists(
+                    db
+                        .select()
+                        .from(collaborators)
+                        .where(eq(collaborators.workspaceId, workspaces.id))
+                ),
+                eq(workspaces.workspaceOwner, userId)
+            )
+        )) as workspace[];
+    return privateWorkspaces;
+
+}
+
+export async function getCollaborativeWorkspaces (userId : string) {
+    if (!userId) return [];
+    const collaboratedWorkspaces = (await db
+        .select({
+            id: workspaces.id,
+            createdAt: workspaces.createdAt,
+            workspaceOwner: workspaces.workspaceOwner,
+            title: workspaces.title,
+            iconId: workspaces.iconId,
+            data: workspaces.data,
+            inTrash: workspaces.inTrash,
+            logo: workspaces.logo,
+            bannerUrl: workspaces.bannerUrl,
+        })
+        .from(users)
+        .innerJoin(collaborators, eq(users.id, collaborators.userId))
+        .innerJoin(workspaces, eq(collaborators.workspaceId, workspaces.id))
+        .where(eq(users.id, userId))) as workspace[];
+    return collaboratedWorkspaces;
+}
+
+export async function getSharedWorkspaces (userId : string) {
+    if (!userId) return [];
+    const sharedWorkspaces = (await db
+        .selectDistinct({
+            id: workspaces.id,
+            createdAt: workspaces.createdAt,
+            workspaceOwner: workspaces.workspaceOwner,
+            title: workspaces.title,
+            iconId: workspaces.iconId,
+            data: workspaces.data,
+            inTrash: workspaces.inTrash,
+            logo: workspaces.logo,
+            bannerUrl: workspaces.bannerUrl,
+        })
+        .from(workspaces)
+        .orderBy(workspaces.createdAt)
+        .innerJoin(collaborators, eq(workspaces.id, collaborators.workspaceId))
+        .where(eq(workspaces.workspaceOwner, userId))) as workspace[];
+    return sharedWorkspaces;
 }
