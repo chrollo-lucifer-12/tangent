@@ -3,10 +3,8 @@ import {
     getUserSubscriptionStatus,
     getFolders,
     getPrivateWorkspaces,
-    getCollaborativeWorkspaces, getSharedWorkspaces
+    getCollaborativeWorkspaces, getSharedWorkspaces, getUserData
 } from "@/utils/supabase/queries";
-import {redirect} from "next/navigation";
-import logger from "@/lib/logger";
 import WorkspaceDropdown from "@/components/dashboard/workspace-dropdown";
 import {
     Sidebar,
@@ -16,14 +14,13 @@ import {
     SidebarGroupLabel,
     SidebarMenu
 } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton"
 import Image from "next/image";
+import {Avatar, AvatarImage} from "@/components/ui/avatar";
 
 export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
-    console.log("AppSidebar started execution");
 
     const supabase = await createClient();
-    console.log("Supabase client initialized");
+
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -31,39 +28,31 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
         return null;
     }
 
-    console.log("User found:", user.id);
+    const {fullname, email, avatarUrl} = await getUserData(user.id);
+    const {data : avatar} = supabase.storage.from("logos").getPublicUrl(`${avatarUrl}`);
 
     const { data: subscriptionData, error: subscriptionError } = await getUserSubscriptionStatus(user.id);
-    console.log("Subscription Data Loaded:", subscriptionData, "Error:", subscriptionError);
+
 
     const { data: workspaceFolderData, error: foldersError } = await getFolders(workspaceId);
-    console.log("Workspace Folder Data Loaded:", workspaceFolderData, "Error:", foldersError);
+
 
     if (subscriptionError || foldersError) {
-        console.log("Error detected, returning error message");
+
         return <div>Error loading data</div>;
     }
 
-    console.log("Fetching private workspaces...");
+
     const privateWorkspaces = await getPrivateWorkspaces(user.id);
-    console.log("Private workspaces loaded:", privateWorkspaces);
 
-    console.log("Fetching collaborative workspaces...");
+
+
     const collaboratingWorkspaces = await getCollaborativeWorkspaces(user.id);
-    console.log("Collaborative workspaces loaded:", collaboratingWorkspaces);
 
-    console.log("Fetching shared workspaces...");
+
+
     const sharedWorkspaces = await getSharedWorkspaces(user.id);
-    console.log("Shared workspaces loaded:", sharedWorkspaces);
 
-
-    console.log("Workspaces fetched:", {
-        privateWorkspaces,
-        collaboratingWorkspaces,
-        sharedWorkspaces
-    });
-
-    console.log("AppSidebar finished execution");
 
     return (
         <Sidebar>
@@ -80,8 +69,17 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
-                <div>
-                    {user.user_metadata.full_name}
+                <div className="flex gap-4 m-4 items-center">
+                    <div className="relative group">
+                        <div className="absolute -inset-2 bg-pink-100 rounded-full blur bg-gradient-to-r from-[#035C76] via-[#03433D] to-[#106E45] opacity-0 group-hover:opacity-100"></div>
+                    <Avatar className="hover:cursor-pointer hover:scale-110 transition duration-300 relative">
+                        <AvatarImage src={avatar.publicUrl} />
+                    </Avatar>
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[#727272]">{fullname}</span>
+                        <span className="font-light text-[#3f3f3f]">{email}</span>
+                    </div>
                 </div>
             </SidebarFooter>
         </Sidebar>

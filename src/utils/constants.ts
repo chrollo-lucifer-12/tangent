@@ -14,3 +14,8 @@ export const workspaceSchema = z.object({
     workspaceName: z.string().min(1, {message: "Name cannot be empty"}),
     file: z.any()
 })
+
+export const uploadDetailsSchema = z.object({
+    full_name : z.string().min(1,{message: "Name cannot be empty"}),
+    file: z.any()
+})

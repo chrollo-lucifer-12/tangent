@@ -13,7 +13,7 @@ import {
 
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
-import { signupSchema} from "@/utils/constants";
+import { signupSchema, uploadDetailsSchema} from "@/utils/constants";
 import {Label} from "@/components/ui/label";
 import Link from "next/link";
 import githublogo from "../../../../public/github-mark-white.png"
@@ -21,32 +21,44 @@ import Image from "next/image";
 import {useState} from "react";
 import Step from "@/components/auth-page/step";
 import AlertEmail from "@/components/auth-page/alert-email";
+import UserCard from "@/components/user/user-card";
+import {useBearActions} from "@/lib/providers/state-provider";
 
 export default function SignupPage({emailVerified} : {emailVerified : boolean}) {
-    console.log(emailVerified);
     const [submitError, setSubmitError] = useState<string>('')
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [fullName, setFullName] = useState<string>('')
     const [steps, setSteps] = useState<number>(emailVerified ? 2 : 1);
     const [isEmailVerified, setIsEmailVerified] = useState<boolean>(emailVerified);
 
-    const {register, handleSubmit, formState: {errors}} = useForm<z.infer<typeof signupSchema>>({
+
+    const {register : signupSchemaRegister,  watch : signupSchemaWatch, handleSubmit : signupSchemaHandleSubmit, formState: {errors : signupSchemaErrors}} = useForm<z.infer<typeof signupSchema>>({
         resolver: zodResolver(signupSchema),
         defaultValues: {},
     })
 
+    useBearActions().changeEmail(signupSchemaWatch("email"))
+
+    const {register : uploadDetailsSchemaRegister, watch : uploadDetailsSchemaWatch, handleSubmit : uploadDetailsSchemaHandleSubmit, formState: {errors : uploadDetailsSchemaErrors}} = useForm<z.infer<typeof uploadDetailsSchema>>({
+        resolver: zodResolver(uploadDetailsSchema),
+        defaultValues: {},
+    })
+
+    useBearActions().changeFullName(uploadDetailsSchemaWatch("full_name"))
+    useBearActions().changeAvatarUrl(uploadDetailsSchemaWatch("file"));
+
     async function onSubmit(values: z.infer<typeof signupSchema>) {
-        console.log(values);
+        //console.log(values);
         const res = await signup(values);
         if (res) {
             setSubmitError(res);
         }
     }
 
-    async function handleSecondSubmit(e) {
-        e.preventDefault();
-        console.log("second");
-        const res  = await updateInfo(avatarUrl, fullName);
+    async function handleSecondSubmit(values : z.infer<typeof uploadDetailsSchema>) {
+        const file = values.file?.[0];
+        //console.log("second");
+        const res  = await updateInfo(file, values.full_name);
         setSubmitError(res!);
     }
 
@@ -55,7 +67,9 @@ export default function SignupPage({emailVerified} : {emailVerified : boolean}) 
             <div className="w-[30%] h-screen flex flex-col items-center gap-20">
                 <p className="text-[#484a4b] mt-20 text-center">Get started with these two simple steps</p>
                 <Step step={steps}/>
-                <AlertEmail status={isEmailVerified}/>
+                {
+                    isEmailVerified ? (<UserCard />) : (<AlertEmail/>)
+                }
             </div>
             <div className="flex min-h-svh w-[70%] h-screen items-center justify-center p-6 md:p-10 bg-[#181c1f]">
                 {
@@ -68,7 +82,7 @@ export default function SignupPage({emailVerified} : {emailVerified : boolean}) 
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleSubmit(onSubmit)}>
+                                <form onSubmit={signupSchemaHandleSubmit(onSubmit)}>
                                     <div className="flex flex-col gap-6">
                                         <div className="grid gap-2">
                                             <Label htmlFor="email">Email</Label>
@@ -78,10 +92,10 @@ export default function SignupPage({emailVerified} : {emailVerified : boolean}) 
                                                 type="email"
                                                 placeholder="m@example.com"
                                                 required
-                                                {...register("email")}
+                                                {...signupSchemaRegister("email")}
                                             />
-                                            {errors.email && (
-                                                <p className="text-white text-sm">{errors.email.message}</p>
+                                            {signupSchemaErrors.email && (
+                                                <p className="text-white text-sm">{signupSchemaErrors.email.message}</p>
                                             )}
                                         </div>
                                         <div className="grid gap-2">
@@ -90,9 +104,9 @@ export default function SignupPage({emailVerified} : {emailVerified : boolean}) 
 
                                             </div>
                                             <Input className="bg-[#282b30]" id="password" type="password"
-                                                   required {...register("password")} />
-                                            {errors.password && (
-                                                <p className="text-white text-sm">{errors.password.message}</p>
+                                                   required {...signupSchemaRegister("password")} />
+                                            {signupSchemaErrors.password && (
+                                                <p className="text-white text-sm">{signupSchemaErrors.password.message}</p>
                                             )}
                                         </div>
 
@@ -124,13 +138,15 @@ export default function SignupPage({emailVerified} : {emailVerified : boolean}) 
                     ) : (
                         <Card className="border-none bg-transparent">
                             <CardHeader>
-                                <CardTitle className="text-2xl">Personal Information</CardTitle>
+                                <CardTitle className="text-2xl">
+                                    Upload Details
+                                </CardTitle>
                                 <CardDescription>
                                     Enter your details below to create your account
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col gap-6">
-                                <form onSubmit={handleSecondSubmit}>
+                                <form onSubmit={uploadDetailsSchemaHandleSubmit(handleSecondSubmit)}>
                                     <div className="flex flex-col gap-6">
                                         <div className="grid gap-2">
                                             <Label htmlFor="fullname">Full Name</Label>
@@ -139,17 +155,17 @@ export default function SignupPage({emailVerified} : {emailVerified : boolean}) 
                                                 id="fullname"
                                                 type="text"
                                                 placeholder="m@example.com"
-                                                value={fullName}
-                                                onChange={(e) => {setFullName(e.target.value)}}
+                                                {...uploadDetailsSchemaRegister("full_name")}
                                             />
+                                            {uploadDetailsSchemaErrors.full_name && (
+                                                <p className="text-white text-sm">{uploadDetailsSchemaErrors.full_name.message}</p>
+                                            )}
                                         </div>
                                         <div className="grid gap-2">
                                             <div className="flex items-center">
                                                 <Label htmlFor="picture">Profile Picture</Label>
                                             </div>
-                                            <Input className="bg-[#282b30]" id="picture" type="file" onChange={(event) => {
-                                                setAvatarUrl(URL.createObjectURL(event.target.files[0]));
-                                            }} />
+                                            <Input className="bg-[#282b30]" id="picture" type="file" {...uploadDetailsSchemaRegister("file")} />
 
                                         </div>
                                         <Button type="submit"

@@ -7,11 +7,14 @@ import {workspaces, folders, users} from "../../../migrations/schema";
 import {and, eq, notExists} from "drizzle-orm";
 import {collaborators} from "@/lib/supabase/schema";
 import {Folder, Subscription, workspace} from "../../lib/supabase/supabase.types";
-import logger from "@/lib/logger";
+
+export async function getUserData(userId : string) {
+    const data = await db.select().from(users).where(eq(users.id,userId));
+    return {fullname : data[0].fullName, email : data[0].email, avatarUrl : data[0].avatarUrl}
+}
 
 export async function createWorkspace(workspaceName : string, file : any, userId : string) {
     const workspaceUUID = v4();
-    console.log(workspaceUUID);
     const supabase = await createClient();
     let filePath = null;
     if (file) {
@@ -107,7 +110,6 @@ export async function getPrivateWorkspaces(userId: string) {
     console.log("Private workspaces fetched:", privateWorkspaces.length);
     return privateWorkspaces;
 }
-
 
 export async function getCollaborativeWorkspaces (userId : string) {
     if (!userId) return [];

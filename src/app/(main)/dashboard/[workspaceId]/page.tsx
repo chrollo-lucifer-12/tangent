@@ -1,4 +1,4 @@
-import {SidebarProvider} from "@/components/ui/sidebar";
+import {SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/dashboard/app-sidebar";
 
 const WorkspacePage = async ({params} : {params : {workspaceId : string}}) => {
@@ -8,6 +8,7 @@ const WorkspacePage = async ({params} : {params : {workspaceId : string}}) => {
     return (
         <SidebarProvider>
             <AppSidebar workspaceId={workspaceId} />
+            <SidebarTrigger/>
         </SidebarProvider>
     )
 }
