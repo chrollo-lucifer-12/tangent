@@ -68,7 +68,6 @@ export const users = pgTable("users", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }),
 	paymentMethod: jsonb("payment_method"),
 	email: text(),
-	password: text()
 }, (table) => [
 	foreignKey({
 			columns: [table.id],
@@ -132,14 +131,14 @@ export const subscriptions = pgTable("subscriptions", {
 	priceId: text("price_id"),
 	quantity: integer(),
 	cancelAtPeriodEnd: boolean("cancel_at_period_end"),
-	created: timestamp({ withTimezone: true, mode: 'string' }).default(sql`now()`).notNull(),
-	currentPeriodStart: timestamp("current_period_start", { withTimezone: true, mode: 'string' }).default(sql`now()`).notNull(),
-	currentPeriodEnd: timestamp("current_period_end", { withTimezone: true, mode: 'string' }).default(sql`now()`).notNull(),
-	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }).default(sql`now()`),
-	cancelAt: timestamp("cancel_at", { withTimezone: true, mode: 'string' }).default(sql`now()`),
-	canceledAt: timestamp("canceled_at", { withTimezone: true, mode: 'string' }).default(sql`now()`),
-	trialStart: timestamp("trial_start", { withTimezone: true, mode: 'string' }).default(sql`now()`),
-	trialEnd: timestamp("trial_end", { withTimezone: true, mode: 'string' }).default(sql`now()`),
+	created: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	currentPeriodStart: timestamp("current_period_start", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	currentPeriodEnd: timestamp("current_period_end", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	cancelAt: timestamp("cancel_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	canceledAt: timestamp("canceled_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	trialStart: timestamp("trial_start", { withTimezone: true, mode: 'string' }).defaultNow(),
+	trialEnd: timestamp("trial_end", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	foreignKey({
 			columns: [table.priceId],
@@ -152,4 +151,21 @@ export const subscriptions = pgTable("subscriptions", {
 			name: "subscriptions_user_id_fkey"
 		}),
 	pgPolicy("Can only view own subs data.", { as: "permissive", for: "select", to: ["public"], using: sql`(( SELECT auth.uid() AS uid) = user_id)` }),
+]);
+
+export const collaborators = pgTable("collaborators", {
+	workspaceId: uuid("workspace_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: uuid("user_id").notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "collaborators_user_id_users_id_fk"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.workspaceId],
+			foreignColumns: [workspaces.id],
+			name: "collaborators_workspace_id_workspaces_id_fk"
+		}).onDelete("cascade"),
 ]);

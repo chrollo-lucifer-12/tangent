@@ -74,10 +74,12 @@ export async function getFolders (workspaceId : string) {
     }
 }
 
-export async function getPrivateWorkspaces (userId : string) {
+export async function getPrivateWorkspaces(userId: string) {
     if (!userId) return [];
 
-    const privateWorkspaces = (await db
+    console.log("Fetching private workspaces for:", userId);
+
+    const privateWorkspaces = await db
         .select({
             id: workspaces.id,
             createdAt: workspaces.createdAt,
@@ -100,14 +102,17 @@ export async function getPrivateWorkspaces (userId : string) {
                 ),
                 eq(workspaces.workspaceOwner, userId)
             )
-        )) as workspace[];
-    return privateWorkspaces;
+        ) as workspace[];
 
+    console.log("Private workspaces fetched:", privateWorkspaces.length);
+    return privateWorkspaces;
 }
+
 
 export async function getCollaborativeWorkspaces (userId : string) {
     if (!userId) return [];
-    const collaboratedWorkspaces = (await db
+    console.log("Fetching collab workspaces for:", userId);
+    const collaboratedWorkspaces = await db
         .select({
             id: workspaces.id,
             createdAt: workspaces.createdAt,
@@ -122,13 +127,15 @@ export async function getCollaborativeWorkspaces (userId : string) {
         .from(users)
         .innerJoin(collaborators, eq(users.id, collaborators.userId))
         .innerJoin(workspaces, eq(collaborators.workspaceId, workspaces.id))
-        .where(eq(users.id, userId))) as workspace[];
+        .where(eq(users.id, userId)) as workspace[];
+    console.log("collab workspaces fetched:", collaboratedWorkspaces.length);
     return collaboratedWorkspaces;
 }
 
 export async function getSharedWorkspaces (userId : string) {
     if (!userId) return [];
-    const sharedWorkspaces = (await db
+    console.log("shared workspaces fetching for:", userId);
+    const sharedWorkspaces = await db
         .selectDistinct({
             id: workspaces.id,
             createdAt: workspaces.createdAt,
@@ -143,6 +150,7 @@ export async function getSharedWorkspaces (userId : string) {
         .from(workspaces)
         .orderBy(workspaces.createdAt)
         .innerJoin(collaborators, eq(workspaces.id, collaborators.workspaceId))
-        .where(eq(workspaces.workspaceOwner, userId))) as workspace[];
+        .where(eq(workspaces.workspaceOwner, userId)) as workspace[];
+    console.log("shared workspaces fetched:",  sharedWorkspaces.length);
     return sharedWorkspaces;
 }
