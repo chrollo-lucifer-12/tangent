@@ -80,7 +80,6 @@ export async function getFolders (workspaceId : string) {
 export async function getPrivateWorkspaces(userId: string) {
     if (!userId) return [];
 
-    console.log("Fetching private workspaces for:", userId);
 
     const privateWorkspaces = await db
         .select({
@@ -107,13 +106,12 @@ export async function getPrivateWorkspaces(userId: string) {
             )
         ) as workspace[];
 
-    console.log("Private workspaces fetched:", privateWorkspaces.length);
     return privateWorkspaces;
 }
 
 export async function getCollaborativeWorkspaces (userId : string) {
     if (!userId) return [];
-    console.log("Fetching collab workspaces for:", userId);
+
     const collaboratedWorkspaces = await db
         .select({
             id: workspaces.id,
@@ -130,13 +128,13 @@ export async function getCollaborativeWorkspaces (userId : string) {
         .innerJoin(collaborators, eq(users.id, collaborators.userId))
         .innerJoin(workspaces, eq(collaborators.workspaceId, workspaces.id))
         .where(eq(users.id, userId)) as workspace[];
-    console.log("collab workspaces fetched:", collaboratedWorkspaces.length);
+
     return collaboratedWorkspaces;
 }
 
 export async function getSharedWorkspaces (userId : string) {
     if (!userId) return [];
-    console.log("shared workspaces fetching for:", userId);
+
     const sharedWorkspaces = await db
         .selectDistinct({
             id: workspaces.id,
@@ -153,6 +151,17 @@ export async function getSharedWorkspaces (userId : string) {
         .orderBy(workspaces.createdAt)
         .innerJoin(collaborators, eq(workspaces.id, collaborators.workspaceId))
         .where(eq(workspaces.workspaceOwner, userId)) as workspace[];
-    console.log("shared workspaces fetched:",  sharedWorkspaces.length);
     return sharedWorkspaces;
+}
+
+export async function searchEmails (searchTerm : string) {
+    if (!searchTerm) return [];
+    const data = await db.query.users.findMany({where : (s,{ilike}) => ilike(s.email,`%${searchTerm}%`)})
+    const supabase = await createClient();
+    const usersWithImages = data.map((user) => {
+        if (!user.avatarUrl) return {email : user.email, image : null};
+        const {data} = supabase.storage.from("logos").getPublicUrl(`${user.avatarUrl}`);
+        return {email : user.email, image: data.publicUrl}
+    });
+    return usersWithImages;
 }

@@ -4,6 +4,7 @@ import {
 } from "@/utils/supabase/queries";
 import {createClient} from "@/utils/supabase/server";
 import WorkspaceDropdown from "@/components/dashboard/workspace-dropdown";
+import {SidebarTrigger} from "@/components/ui/sidebar";
 
 
 const DashboardNavbar = async ({ workspaceId }: { workspaceId: string }) => {
@@ -17,7 +18,8 @@ const DashboardNavbar = async ({ workspaceId }: { workspaceId: string }) => {
 
 
     return (
-        <div className="w-full h-fit p-3 border border-b-[#202020]">
+        <div className="w-full h-fit p-3 border border-b-[#202020] flex">
+            <SidebarTrigger  />
             <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces}
                                collaboratingWorkspaces={collaboratingWorkspaces}
                                defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]

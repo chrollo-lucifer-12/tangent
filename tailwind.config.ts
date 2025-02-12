@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-
+const plugin = require("tailwindcss/plugin")
 export default {
     darkMode: ["class"],
     content: [
@@ -68,5 +68,18 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography"),plugin(
+	  function ({addVariant}){
+		  addVariant("glow", ".glow-capture .glow-overlay &")
+	  },
+	  {
+		  theme : {
+			  extend : {
+				  colors : {
+					  glow: "color-mix(in srgb, var(--glow-color) calc(<alpha-value> * 100%), transparent)"
+				  }
+			  }
+		  }
+	  }
+  )],
 } satisfies Config;
