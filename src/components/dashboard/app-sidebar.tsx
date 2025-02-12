@@ -1,12 +1,5 @@
 import {createClient} from "@/utils/supabase/server";
 import {
-    getUserSubscriptionStatus,
-    getFolders,
-    getPrivateWorkspaces,
-    getCollaborativeWorkspaces, getSharedWorkspaces, getUserData
-} from "@/utils/supabase/queries";
-import WorkspaceDropdown from "@/components/dashboard/workspace-dropdown";
-import {
     Sidebar,
     SidebarContent, SidebarFooter,
     SidebarGroup,
@@ -14,13 +7,12 @@ import {
     SidebarGroupLabel,
     SidebarMenu
 } from "@/components/ui/sidebar";
-import Image from "next/image";
 import {Avatar, AvatarImage} from "@/components/ui/avatar";
+import {getUserData} from "@/utils/supabase/queries";
 
-export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
+export async function AppSidebar() {
 
     const supabase = await createClient();
-
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -31,39 +23,15 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
     const {fullname, email, avatarUrl} = await getUserData(user.id);
     const {data : avatar} = supabase.storage.from("logos").getPublicUrl(`${avatarUrl}`);
 
-    const { data: subscriptionData, error: subscriptionError } = await getUserSubscriptionStatus(user.id);
-
-
-    const { data: workspaceFolderData, error: foldersError } = await getFolders(workspaceId);
-
-
-    if (subscriptionError || foldersError) {
-
-        return <div>Error loading data</div>;
-    }
-
-
-    const privateWorkspaces = await getPrivateWorkspaces(user.id);
-
-
-
-    const collaboratingWorkspaces = await getCollaborativeWorkspaces(user.id);
-
-
-
-    const sharedWorkspaces = await getSharedWorkspaces(user.id);
-
 
     return (
-        <Sidebar>
+        <Sidebar className="bg-[#171717]">
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Your workspaces</SidebarGroupLabel>
+                    <SidebarGroupLabel className="text-[#2b2b2b]">Your workspaces</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces}
-                                               collaboratingWorkspaces={collaboratingWorkspaces} defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]
-                                .find((workspace) => workspace.id === workspaceId)} />
+
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>

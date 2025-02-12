@@ -11,24 +11,6 @@ import {createWorkspace} from "@/utils/supabase/queries";
 import {redirect} from "next/navigation";
 
 const DashboardSetup = ({ userId }: { userId: string }) => {
-    const [rotation, setRotation] = useState({ x: 0, y: 0 });
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const { clientX, clientY, currentTarget } = e;
-        const { left, top, width, height } = currentTarget.getBoundingClientRect();
-
-        const x = (clientX - left) / width - 0.5;
-        const y = (clientY - top) / height - 0.5;
-
-        const rotateX = y * -20;
-        const rotateY = x * 20;
-
-        setRotation({ x: rotateX, y: rotateY });
-    };
-
-    const handleMouseLeave = () => {
-        setRotation({ x: 0, y: 0 });
-    };
 
     const {
         register,
@@ -53,21 +35,11 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
 
 
     return (
-        <div className="relative group flex justify-center items-center" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+        <div className="relative group flex justify-center items-center" >
             <div
-                className="absolute inset-0 shadow-md shadow-blue-600 blur opacity-0 group-hover:opacity-75 transition duration-150"
-                style={{
-                    transform: `perspective(800px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: "transform 0.1s ease-out",
-                }}
-            ></div>
+                className="absolute inset-0 shadow-md shadow-blue-600 blur opacity-0 group-hover:opacity-75 transition duration-150"></div>
             <Card
-                className="border-none relative"
-                style={{
-                    transform: `perspective(800px) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)`,
-                    transition: "transform 0.1s ease-out",
-                }}
-            >
+                className="border-none relative">
                 <CardHeader>
                     <CardTitle>Create a new workspace</CardTitle>
                     <CardDescription>Teamspaces are where your team organizes pages, permissions and

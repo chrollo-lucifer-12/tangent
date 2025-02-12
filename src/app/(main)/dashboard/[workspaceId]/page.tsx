@@ -1,15 +1,20 @@
 import {SidebarProvider, SidebarTrigger} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/dashboard/app-sidebar";
+import DashboardNavbar from "@/components/dashboard/dashboard-navbar";
 
 const WorkspacePage = async ({params} : {params : {workspaceId : string}}) => {
 
     const {workspaceId} = await params
 
     return (
-        <SidebarProvider>
-            <AppSidebar workspaceId={workspaceId} />
-            <SidebarTrigger/>
-        </SidebarProvider>
+        <>
+
+            <SidebarProvider>
+                <AppSidebar/>
+                <SidebarTrigger/>
+                <DashboardNavbar workspaceId={workspaceId}/>
+            </SidebarProvider>
+        </>
     )
 }
 
