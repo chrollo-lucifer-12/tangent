@@ -20,15 +20,17 @@ interface WorkspaceDropdownProps {
     privateWorkspaces : workspace[],
     sharedWorkspaces : workspace[] | [],
     collaboratingWorkspaces : workspace[] | [],
-    defaultValue : workspace | undefined
+    defaultValue : workspace | undefined,
+    userId : string
 }
 
-const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspaces, sharedWorkspaces, collaboratingWorkspaces, defaultValue}) => {
+const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspaces, sharedWorkspaces, collaboratingWorkspaces, defaultValue, userId}) => {
 
     const [selectedOption, setSelectedOption] = useState(defaultValue);
     const [isOpen, setIsOpen] = useState<boolean>(false);
 
     const supbase = createClient();
+
 
     function getLogo(worskapceUrl: string) {
         const {data: workspaceLogo} = supbase.storage.from("logos").getPublicUrl(`${worskapceUrl}`);
@@ -94,7 +96,7 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                                 Create Workspace
                         </DialogTrigger>
                         <DialogContent >
-                            <DashboardSetup userId=""/>
+                            <DashboardSetup userId={userId}/>
                         </DialogContent>
                     </Dialog>
                 </div>

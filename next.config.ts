@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
                 protocol : "https",
                 hostname: "yvownymnnedzmccdxhbk.supabase.co",
                 pathname: "/storage/v1/object/public/logos/workspace/**",
+            },
+            {
+                protocol: "https",
+                hostname: "github.com"
             }
         ],
     },

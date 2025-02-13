@@ -20,7 +20,7 @@ const DashboardNavbar = async ({ workspaceId }: { workspaceId: string }) => {
     return (
         <div className="w-full h-fit p-3 border border-b-[#202020] flex">
             <SidebarTrigger  />
-            <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces}
+            <WorkspaceDropdown userId={user.id} privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces}
                                collaboratingWorkspaces={collaboratingWorkspaces}
                                defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]
                                    .find((workspace) => workspace.id === workspaceId)} />

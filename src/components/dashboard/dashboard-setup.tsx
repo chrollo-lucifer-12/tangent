@@ -8,18 +8,13 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import {createWorkspace} from "@/utils/supabase/queries";
-import {redirect} from "next/navigation"
 import {Label} from "@/components/ui/label";
 import {
     DropdownMenu,
-    DropdownMenuCheckboxItem,
     DropdownMenuContent, DropdownMenuItem,
-    DropdownMenuLabel, DropdownMenuPortal,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {ChevronDown, Lock, Share2} from "lucide-react";
-import {DropdownMenuCheckboxItemProps} from "@radix-ui/react-dropdown-menu";
 import CollaboratorsSheet from "@/components/dashboard/collaborators-sheet";
 
 
@@ -27,7 +22,8 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
 
 
     const [permission, setPermission] = useState("Private")
-    const [openSheet, setOpenSheet] = useState(false)
+    const [openSheet, setOpenSheet] = useState(false);
+    const [addedMembers, setAddedMembers] = useState<{ id : string | null, email: string | null, image: string | null }[]>([])
 
     const {
         register,
@@ -35,23 +31,17 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
         reset,
         formState: {isSubmitting: isLoading, errors},
     } = useForm<z.infer<typeof workspaceSchema>>({
-        mode: "onChange",
         defaultValues: {},
     });
 
     async function onSubmit(values: z.infer<typeof workspaceSchema>) {
         const file = values.file?.[0];
-        const res = await createWorkspace(values.workspaceName, file, userId);
-        if (res.success) {
-            redirect(`/dashboard/${res.data}`);
-        } else {
-
-        }
+        const res = await createWorkspace(values.workspaceName, file, userId, addedMembers);
     }
 
     return (
         <>
-            <CollaboratorsSheet openSheet={openSheet}/>
+            <CollaboratorsSheet openSheet={openSheet} setOpenSheet={setOpenSheet} addedMembers={addedMembers} setAddedMembers={setAddedMembers} />
         <div className="flex justify-center items-center">
             <Card
                 className="border-none relative">
@@ -95,10 +85,10 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
                             </DropdownMenuContent>
                         </DropdownMenu>
                         {
-                            permission === "Shared" && (<Button onClick={() => setOpenSheet(prev => !prev)} className="border border-[#453128] bg-[#302523] text-[#e4714a] hover:bg-[#302523]"> + Add Member</Button>)
+                            permission === "Shared" && (<Button type="button" onClick={() => setOpenSheet(true)} className="border border-[#453128] bg-[#302523] text-[#e4714a] hover:bg-[#302523]"> + Add Member</Button>)
                         }
                     </CardContent>
-
+                    <Button type="submit">Create</Button>
                 </form>
             </Card>
         </div>

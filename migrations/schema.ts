@@ -1,4 +1,4 @@
-import { pgTable, uuid, timestamp, text, foreignKey, pgPolicy, jsonb, boolean, check, bigint, integer, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, uuid, timestamp, text, foreignKey, index, pgPolicy, jsonb, boolean, check, bigint, integer, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const pricingPlanInterval = pgEnum("pricing_plan_interval", ['day', 'week', 'month', 'year'])
@@ -69,6 +69,7 @@ export const users = pgTable("users", {
 	paymentMethod: jsonb("payment_method"),
 	email: text(),
 }, (table) => [
+	index("user_email_idx").using("gin", sql`to_tsvector('english'::regconfig`),
 	foreignKey({
 			columns: [table.id],
 			foreignColumns: [table.id],

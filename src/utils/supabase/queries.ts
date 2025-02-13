@@ -3,9 +3,8 @@
 import {v4, validate} from "uuid";
 import {createClient} from "@/utils/supabase/server";
 import db from "@/lib/supabase/db";
-import {workspaces, folders, users} from "../../../migrations/schema";
+import {workspaces, folders, users, collaborators} from "../../../migrations/schema";
 import {and, eq, notExists} from "drizzle-orm";
-import {collaborators} from "@/lib/supabase/schema";
 import {Folder, Subscription, workspace} from "../../lib/supabase/supabase.types";
 
 export async function getUserData(userId : string) {
@@ -13,7 +12,7 @@ export async function getUserData(userId : string) {
     return {fullname : data[0].fullName, email : data[0].email, avatarUrl : data[0].avatarUrl}
 }
 
-export async function createWorkspace(workspaceName : string, file : any, userId : string) {
+export async function createWorkspace(workspaceName : string, file : any, userId : string, collaboratorsList : { id : string | null, email: string | null, image: string | null }[]) {
     const workspaceUUID = v4();
     const supabase = await createClient();
     let filePath = null;
@@ -24,6 +23,7 @@ export async function createWorkspace(workspaceName : string, file : any, userId
         }
         filePath = data?.path
     }
+
     try {
         const res = await db.insert(workspaces).values({
             id: workspaceUUID,
@@ -34,8 +34,19 @@ export async function createWorkspace(workspaceName : string, file : any, userId
             data: null,
             iconId: "",
             inTrash: "",
-            bannerUrl: ""
+            bannerUrl: "",
         });
+        if (collaboratorsList.length) {
+            const collaboratorPayload: { userId: string, workspaceId: string, createdAt: string }[] = [];
+            collaboratorsList.map((collaborator) => {
+                collaboratorPayload.push({
+                    userId: collaborator.id!,
+                    workspaceId: workspaceUUID,
+                    createdAt: new Date().toISOString()
+                });
+            })
+            await db.insert(collaborators).values(collaboratorPayload);
+        }
         return {data : workspaceUUID, success : true}
     } catch (e) {
         console.log(e);
@@ -159,9 +170,9 @@ export async function searchEmails (searchTerm : string) {
     const data = await db.query.users.findMany({where : (s,{ilike}) => ilike(s.email,`%${searchTerm}%`)})
     const supabase = await createClient();
     const usersWithImages = data.map((user) => {
-        if (!user.avatarUrl) return {email : user.email, image : null};
+        if (!user.avatarUrl) return {id : user.id, email : user.email, image : null};
         const {data} = supabase.storage.from("logos").getPublicUrl(`${user.avatarUrl}`);
-        return {email : user.email, image: data.publicUrl}
+        return {id : user.id, email : user.email, image: data.publicUrl}
     });
     return usersWithImages;
 }
