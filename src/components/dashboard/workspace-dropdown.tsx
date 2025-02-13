@@ -67,7 +67,7 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
         <Collapsible
             open={isOpen}
             onOpenChange={setIsOpen}
-            className="w-[250px] space-y-2"
+            className="w-[250px] space-y-2 hover:bg-[#18181B] rounded-lg"
         >
             <div className="flex items-center justify-between space-x-4 px-4 min-w-0">
                 <h4 className="text-sm font-mono font-semibold flex items-center gap-2">
