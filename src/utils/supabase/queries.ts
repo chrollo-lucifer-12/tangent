@@ -35,7 +35,7 @@ export async function createWorkspace(workspaceName : string, file : any, userId
             iconId: "",
             inTrash: "",
             bannerUrl: "",
-        });
+        }).returning();
         if (collaboratorsList.length) {
             const collaboratorPayload: { userId: string, workspaceId: string, createdAt: string }[] = [];
             collaboratorsList.map((collaborator) => {
@@ -46,11 +46,14 @@ export async function createWorkspace(workspaceName : string, file : any, userId
                 });
             })
             await db.insert(collaborators).values(collaboratorPayload);
+            return {data : res[0], success : true, type : "collab"}
         }
-        return {data : workspaceUUID, success : true}
+        else {
+            return {data : res[0], success : true, type : "private"}
+        }
     } catch (e) {
         console.log(e);
-        return {success : false};
+        return {data : null, success : false, type : null};
     }
 }
 

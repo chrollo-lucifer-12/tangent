@@ -16,14 +16,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {ChevronDown, Lock, Share2} from "lucide-react";
 import CollaboratorsSheet from "@/components/dashboard/collaborators-sheet";
+import {useBearActions} from "@/lib/providers/state-provider";
 
 
 const DashboardSetup = ({ userId }: { userId: string }) => {
 
-
+    const actions = useBearActions();
     const [permission, setPermission] = useState("Private")
     const [openSheet, setOpenSheet] = useState(false);
-    const [addedMembers, setAddedMembers] = useState<{ id : string | null, email: string | null, image: string | null }[]>([])
+    const [addedMembers, setAddedMembers] = useState<{ id : string | null, email: string | null, image: string | null }[]>([]);
 
     const {
         register,
@@ -37,6 +38,12 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
     async function onSubmit(values: z.infer<typeof workspaceSchema>) {
         const file = values.file?.[0];
         const res = await createWorkspace(values.workspaceName, file, userId, addedMembers);
+        if (res.type === "private") {
+            actions.changePrivateWorkspaces(res.data);
+        }
+        else {
+            actions.changeCollaboratingWorkspaces(res.data!);
+        }
     }
 
     return (

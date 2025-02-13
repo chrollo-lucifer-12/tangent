@@ -1,7 +1,7 @@
 "use client"
 
 import {workspace} from "@/lib/supabase/supabase.types";
-import React, {useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {
     Collapsible,
     CollapsibleContent,
@@ -14,6 +14,12 @@ import {createClient} from "@/utils/supabase/client";
 import Link from "next/link";
 import {Dialog, DialogContent, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import DashboardSetup from "@/components/dashboard/dashboard-setup";
+import {
+    useBearActions,
+    useCollaboratingWorkspaces,
+    usePrivateWorkspaces,
+    useSharedWorkspaces
+} from "@/lib/providers/state-provider";
 
 
 interface WorkspaceDropdownProps {
@@ -25,6 +31,25 @@ interface WorkspaceDropdownProps {
 }
 
 const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspaces, sharedWorkspaces, collaboratingWorkspaces, defaultValue, userId}) => {
+    const actions = useBearActions()
+    const privateStates = usePrivateWorkspaces();
+    const sharedStates = useSharedWorkspaces()
+    const collaboratingStates = useCollaboratingWorkspaces();
+
+    useEffect(() => {
+        actions.resetWorkspaces();
+        privateWorkspaces.map((w) => {
+            actions.changePrivateWorkspaces(w);
+        })
+        sharedWorkspaces.map((w) => {
+            actions.changeSharedWorkspaces(w);
+        })
+        collaboratingWorkspaces.map((w) => {
+            actions.changeCollaboratingWorkspaces(w);
+        })
+    }, []);
+
+
 
     const [selectedOption, setSelectedOption] = useState(defaultValue);
     const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -61,30 +86,30 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
             <CollapsibleContent className="space-y-2 absolute z-50 w-[250px] transition-all duration-300 ease-in-out">
                 <div className="transform transition-all duration-300 ease-in-out">
                     {
-                        privateWorkspaces.map((workspace, i) => (
+                        privateStates.map((workspace, i) => (
                             <Link href={`${workspace.id}`} key={i}
                                   className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm flex flex-row  items-center gap-2">
-                                <Image src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
+                                <Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
                                        className="rounded-full"/>
                                 <p>{workspace?.title}</p>
                             </Link>
                         ))
                     }
                     {
-                        sharedWorkspaces.map((workspace, i) => (
+                        sharedStates.map((workspace, i) => (
                             <Link href={`${workspace.id}`} key={i}
                                   className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm flex flex-row  items-center gap-2">
-                                <Image src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
+                                <Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
                                        className="rounded-full"/>
                                 <p>{workspace?.title}</p>
                             </Link>
                         ))
                     }
                     {
-                        collaboratingWorkspaces.map((workspace, i) => (
+                        collaboratingStates.map((workspace, i) => (
                             <Link href={`${workspace.id}`} key={i}
                                   className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm flex flex-row  items-center gap-2">
-                                <Image src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
+                                <Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
                                        className="rounded-full"/>
                                 <p>{workspace?.title}</p>
                             </Link>
