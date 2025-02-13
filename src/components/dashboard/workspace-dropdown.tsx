@@ -8,7 +8,7 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import {Button} from "@/components/ui/button";
-import {ChevronsUpDown} from "lucide-react";
+import {ChevronsUpDown, PlusCircleIcon} from "lucide-react";
 import Image from "next/image";
 import {createClient} from "@/utils/supabase/client";
 import Link from "next/link";
@@ -20,6 +20,14 @@ import {
     usePrivateWorkspaces,
     useSharedWorkspaces
 } from "@/lib/providers/state-provider";
+import {
+    Select,
+    SelectContent, SelectGroup,
+    SelectItem, SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {redirect, useRouter} from "next/navigation";
 
 
 interface WorkspaceDropdownProps {
@@ -35,6 +43,7 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
     const privateStates = usePrivateWorkspaces();
     const sharedStates = useSharedWorkspaces()
     const collaboratingStates = useCollaboratingWorkspaces();
+    const router = useRouter();
 
     useEffect(() => {
         actions.resetWorkspaces();
@@ -64,69 +73,74 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
 
 
     return <div className="relative">
-        <Collapsible
+        <Select
             open={isOpen}
             onOpenChange={setIsOpen}
-            className="w-[250px] space-y-2 hover:bg-[#18181B] rounded-lg"
         >
-            <div className="flex items-center justify-between space-x-4 px-4 min-w-0">
-                <h4 className="text-sm font-mono font-semibold flex items-center gap-2">
-                    <Image src={getLogo(selectedOption.logo)} alt="workspace logo" width={20} height={20}
-                           className="rounded-full"/>
-                    <p>{selectedOption?.title}</p>
-                </h4>
-                <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm"
-                            className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : 'rotate-0'}`}>
-                        <ChevronsUpDown className="h-4 w-4"/>
-                        <span className="sr-only">Toggle</span>
-                    </Button>
-                </CollapsibleTrigger>
+            <div className="flex items-center space-x-2  px-4 min-w-0">
+                <SelectTrigger className="focus:ring-[#3c2f55]">
+                    <h4 className="text-sm font-mono font-semibold flex items-center gap-4">
+                        <Image src={getLogo(selectedOption.logo)} alt="workspace logo" width={20} height={20}
+                               className="rounded-full"/>
+                        <p>{selectedOption?.title}</p>
+                    </h4>
+                </SelectTrigger>
+                <Dialog>
+                    <DialogTitle></DialogTitle>
+                    <DialogTrigger>
+                        <PlusCircleIcon className="text-[#919297] hover:text-white transition duration-200" />
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DashboardSetup userId={userId}/>
+                    </DialogContent>
+                </Dialog>
             </div>
-            <CollapsibleContent className="space-y-2 absolute z-50 w-[250px] transition-all duration-300 ease-in-out">
-                <div className="transform transition-all duration-300 ease-in-out">
+
+            <SelectContent className="bg-[#18181a] w-[250px]"><span className="text-[10px] text-[#919297] p-2 m-2">Workspaces</span>
+                <SelectGroup>
                     {
                         privateStates.map((workspace, i) => (
-                            <Link href={`${workspace.id}`} key={i}
-                                  className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm flex flex-row  items-center gap-2">
-                                <Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
-                                       className="rounded-full"/>
+                            <Link href={`/dashboard/${workspace.id}`} key={i}
+                                  className="flex items-center text-[#919297] rounded-md gap-6 p-2 pl-6 pr-6 hover:text-white hover:bg-[#26262B] hover:ring-1 transition duration-300">
+                                {/*<Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}*/}
+                                {/*       className="rounded-full"/>*/}
                                 <p>{workspace?.title}</p>
                             </Link>
                         ))
                     }
+                </SelectGroup>
+                <SelectGroup>
+
                     {
                         sharedStates.map((workspace, i) => (
-                            <Link href={`${workspace.id}`} key={i}
-                                  className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm flex flex-row  items-center gap-2">
-                                <Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
-                                       className="rounded-full"/>
-                                <p>{workspace?.title}</p>
-                            </Link>
+
+                                <Link href={`/dashboard/${workspace.id}`} key={i}
+                                      className="flex items-center text-[#919297] rounded-md gap-6 p-2 pl-6 pr-6 hover:text-white hover:bg-[#26262B] hover:ring-1 transition duration-300">
+                                    {/*<Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}*/}
+                                    {/*       className="rounded-full"/>*/}
+                                    <p>{workspace?.title}</p>
+                                </Link>
+
+
                         ))
                     }
+                </SelectGroup>
+                <SelectGroup>
+
                     {
                         collaboratingStates.map((workspace, i) => (
-                            <Link href={`${workspace.id}`} key={i}
-                                  className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm flex flex-row  items-center gap-2">
-                                <Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}
-                                       className="rounded-full"/>
+                            <Link href={`/dashboard/${workspace.id}`} key={i}
+                                  className="flex items-center text-[#919297] rounded-md gap-6 p-2 pl-6 pr-6 hover:text-white hover:bg-[#26262B] hover:ring-1 transition duration-300">
+                                {/*<Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}*/}
+                                {/*       className="rounded-full"/>*/}
                                 <p>{workspace?.title}</p>
                             </Link>
                         ))
                     }
-                    <Dialog>
-                        <DialogTitle></DialogTitle>
-                        <DialogTrigger className="glow:text-glow/[.0.15]">
-                                Create Workspace
-                        </DialogTrigger>
-                        <DialogContent >
-                            <DashboardSetup userId={userId}/>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-            </CollapsibleContent>
-        </Collapsible>
+                </SelectGroup>
+
+            </SelectContent>
+        </Select>
     </div>
 }
 

@@ -75,7 +75,7 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
                         <div className="flex flex-col gap-6 w-full">
                             <div className="flex flex-col gap-4 w-full">
                                 <Label htmlFor="name" className="text-[#6f6f6f] text-[12px]">Workspace Name</Label>
-                                <Input className="bg-[#2f2f2d] text-[#6c6c6c]" id="name" type="text" {...register("workspaceName")}
+                                <Input className="bg-[#2f2f2d] text-[#6c6c6c] focus:ring-0" id="name" type="text" {...register("workspaceName")}
                                        placeholder="Workspace name"/>
                             </div>
                             <div className="flex flex-col gap-4 w-full">
