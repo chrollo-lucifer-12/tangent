@@ -57,6 +57,16 @@ export async function createWorkspace(workspaceName : string, file : any, userId
     }
 }
 
+export async function createFolder (folder : Folder) {
+    try {
+    await db.insert(folders).values(folder);
+    return {data : null, error : null}
+    } catch (e) {
+        console.log(e);
+        return {data : null, error : "error"}
+    }
+}
+
 export async function getUserSubscriptionStatus (userId : string) {
     try {
         const data = await db.query.subscriptions.findFirst({

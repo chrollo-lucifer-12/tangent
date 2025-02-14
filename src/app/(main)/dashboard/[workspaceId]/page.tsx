@@ -1,7 +1,6 @@
 import {SidebarProvider} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/dashboard/app-sidebar";
 import DashboardNavbar from "@/components/dashboard/dashboard-navbar";
-import CollaboratorsSheet from "@/components/dashboard/collaborators-sheet";
 
 const WorkspacePage = async ({params} : {params : {workspaceId : string}}) => {
 
@@ -9,10 +8,8 @@ const WorkspacePage = async ({params} : {params : {workspaceId : string}}) => {
 
     return (
         <>
-
             <SidebarProvider>
-                <AppSidebar/>
-
+                <AppSidebar workspaceId = {workspaceId} />
                 <DashboardNavbar workspaceId={workspaceId}/>
             </SidebarProvider>
         </>

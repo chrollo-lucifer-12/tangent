@@ -1,10 +1,11 @@
 import { create } from 'zustand'
-import {workspace} from "@/lib/supabase/supabase.types";
+import {Folder, workspace} from "@/lib/supabase/supabase.types";
 
 type userState = {
     email : string,
     fullname : string,
     avatarUrl : any,
+    workspaceFolders : Folder[],
     privateWorkspaces : workspace[],
     sharedWorkspaces : workspace[],
     collaboratingWorkspaces : workspace[],
@@ -15,7 +16,9 @@ type userState = {
         changePrivateWorkspaces : (newWorkspace : workspace) => void
         changeSharedWorkspaces : (newWorkspace : workspace) => void
         changeCollaboratingWorkspaces : (newWorkspace : workspace) => void
+        changeworkspaceFolders : (newFolder : Folder) => void
         resetWorkspaces : () => void
+        resetFolders : () => void
     },
 }
 
@@ -23,6 +26,7 @@ const useBearStore = create<userState>((set) => ({
     email : "user@gamil.com",
     fullname : "user",
     avatarUrl : "",
+    workspaceFolders : [],
     privateWorkspaces : [],
     sharedWorkspaces : [],
     collaboratingWorkspaces : [],
@@ -39,7 +43,11 @@ const useBearStore = create<userState>((set) => ({
         changeCollaboratingWorkspaces: (newWorkspace: workspace) => set((state) => ({
             collaboratingWorkspaces : [...state.collaboratingWorkspaces, newWorkspace]
         })),
-        resetWorkspaces : () => set({privateWorkspaces : [], sharedWorkspaces : [], collaboratingWorkspaces : []})
+        changeworkspaceFolders: (newFolder: Folder) => set((state) => ({
+            workspaceFolders : [...state.workspaceFolders, newFolder]
+        })),
+        resetWorkspaces : () => set({privateWorkspaces : [], sharedWorkspaces : [], collaboratingWorkspaces : []}),
+        resetFolders : () => set({workspaceFolders : []})
     },
 }))
 
@@ -49,6 +57,6 @@ export const useAvatar = () => useBearStore((state) => state.avatarUrl)
 export const usePrivateWorkspaces = () => useBearStore((state) => state.privateWorkspaces)
 export const useSharedWorkspaces = () => useBearStore((state) => state.sharedWorkspaces)
 export const useCollaboratingWorkspaces = () => useBearStore((state) => state.collaboratingWorkspaces);
-
+export const useWorkspaceFolders = () => useBearStore((state) => state.workspaceFolders)
 export const useBearActions = () =>
     useBearStore((state) => state.actions)
