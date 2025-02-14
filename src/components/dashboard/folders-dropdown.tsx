@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/accordion"
 import {Plus} from "lucide-react";
 import {useBearActions, useWorkspaceFolders} from "@/lib/providers/state-provider";
-import {createFolder} from "@/utils/supabase/queries";
+import {createFolder, renameFolder} from "@/utils/supabase/queries";
 import {Input} from "@/components/ui/input";
 interface FoldersDropdownProps {
     workspaceId : string
@@ -22,7 +22,7 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
 
     const actions = useBearActions()
     const folders = useWorkspaceFolders()
-    const [editingFolder, setEditingFolder] = useState<number>();
+    const [editingFolder, setEditingFolder] = useState<string | null>();
     const [folderTitles, setFolderTitles] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
@@ -53,6 +53,13 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
         }
     }
 
+    async function handleNameChange () {
+        if (!editingFolder) return;
+        actions.renameWorkspaceFolder(folderTitles[editingFolder], editingFolder)
+        setEditingFolder(null);
+        //await renameFolder(editingFolder,folderTitles[editingFolder]);
+    }
+
     return (
         <div className="flex flex-col w-full items-center  gap-6 h-fit rounded-md sticky mt-2">
             <div className="flex justify-between w-full items-center rounded-md p-1 hover:bg-[#0C0A09]">
@@ -68,13 +75,20 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
                             <AccordionItem value="item-1">
                                 <AccordionTrigger className="text-[#5d5d5d] hover:text-white transition duration-200">📁
                                     {
-                                        editingFolder === i ? (<Input
+                                        editingFolder === folder.id ? (<Input
                                             autoFocus
                                             value={folderTitles[folder.id] || ""}
                                             onChange={(e) => setFolderTitles((prev) => ({ ...prev, [folder.id]: e.target.value }))}
-
+                                            onBlur={() => {
+                                                setEditingFolder(null)
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") {
+                                                    handleNameChange()
+                                                }
+                                            }}
                                         />) : (<span onDoubleClick={() => {
-                                            setEditingFolder(i)
+                                            setEditingFolder(folder.id)
                                         }}>{folder.title}</span>)
                                     }
                                 </AccordionTrigger>

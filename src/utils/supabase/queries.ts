@@ -67,6 +67,11 @@ export async function createFolder (folder : Folder) {
     }
 }
 
+export async function renameFolder (folderId : string, newName : string) {
+    if (!folderId || !newName) return;
+    await db.update(folders).set({title: newName}).where(eq(folders.id,folderId));
+}
+
 export async function getUserSubscriptionStatus (userId : string) {
     try {
         const data = await db.query.subscriptions.findFirst({

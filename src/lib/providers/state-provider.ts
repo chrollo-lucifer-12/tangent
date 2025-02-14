@@ -17,6 +17,7 @@ type userState = {
         changeSharedWorkspaces : (newWorkspace : workspace) => void
         changeCollaboratingWorkspaces : (newWorkspace : workspace) => void
         changeworkspaceFolders : (newFolder : Folder) => void
+        renameWorkspaceFolder : (newName : string, folderId : string) => void
         resetWorkspaces : () => void
         resetFolders : () => void
     },
@@ -46,6 +47,9 @@ const useBearStore = create<userState>((set) => ({
         changeworkspaceFolders: (newFolder: Folder) => set((state) => ({
             workspaceFolders : [...state.workspaceFolders, newFolder]
         })),
+        renameWorkspaceFolder : (newName : string, folderId : string) => set((state) => ({
+            workspaceFolders : state.workspaceFolders.map((folder) => folder.id === folderId ? {...folder, title : newName} : folder)
+        })),
         resetWorkspaces : () => set({privateWorkspaces : [], sharedWorkspaces : [], collaboratingWorkspaces : []}),
         resetFolders : () => set({workspaceFolders : []})
     },
@@ -58,5 +62,6 @@ export const usePrivateWorkspaces = () => useBearStore((state) => state.privateW
 export const useSharedWorkspaces = () => useBearStore((state) => state.sharedWorkspaces)
 export const useCollaboratingWorkspaces = () => useBearStore((state) => state.collaboratingWorkspaces);
 export const useWorkspaceFolders = () => useBearStore((state) => state.workspaceFolders)
+
 export const useBearActions = () =>
     useBearStore((state) => state.actions)
