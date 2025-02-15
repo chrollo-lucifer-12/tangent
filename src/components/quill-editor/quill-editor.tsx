@@ -37,18 +37,19 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}
         wrapper.append(editor);
         const Quill = (await import("quill")).default
         // cursors
-        const q = new Quill(editor,{
-            theme : "snow",
-            modules : {
-                toolbar : TOOLBAR_OPTIONS
+        const q = new Quill(editor, {
+            theme: "snow",
+            modules: {
+                toolbar: TOOLBAR_OPTIONS
             }
         })
         setQuill(q);
     }, [])
 
     return <>
-        <div id="container" className="w-full h-screen border-0" ref={wrappedRef}>
-
+        <div className="flex justify-center items-center relative mt-2 items-center ">
+            <div id="container" className="w-full h-screen border-0 border-none focus:border-none" ref={wrappedRef}>
+            </div>
         </div>
     </>
 }
