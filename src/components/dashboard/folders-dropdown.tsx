@@ -22,6 +22,7 @@ import {createFolder, renameFolder, revalidateDashboard} from "@/utils/supabase/
 import {Input} from "@/components/ui/input";
 import FolderPages from "@/components/dashboard/folder-pages";
 import {revalidatePath} from "next/cache";
+import {redirect} from "next/navigation";
 interface FoldersDropdownProps {
     workspaceId : string
     workspaceFolders : Folder[]
@@ -80,11 +81,8 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
                                 <AccordionTrigger
                                     className="text-[#5d5d5d] hover:text-white transition duration-200 hover:no-underline"
                                     onClick={() => {
-                                        if (selectedFolder === folder.id) {
-                                            setSelectedFolder(null);
-                                        } else {
                                             setSelectedFolder(folder.id)
-                                        }
+                                        redirect(`/dashboard/${workspaceId}/${folder.id}`)
                                     }}>📁
                                     {
                                         editingFolder === folder.id ? (<Input

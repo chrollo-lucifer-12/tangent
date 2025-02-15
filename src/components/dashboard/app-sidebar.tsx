@@ -26,7 +26,7 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
     const user = await getCachedUser()
 
     if (!user) {
-        console.log("No user found, returning early")
+        //console.log("No user found, returning early")
         return null
     }
 

@@ -16,7 +16,7 @@ const DashboardNavbar = async ({ workspaceId }: { workspaceId: string }) => {
     const sharedWorkspaces = await getSharedWorkspaces(user.id);
 
     return (
-        <div className="w-full h-fit p-3 border border-b-[#202020] flex">
+        <div className="w-full h-fit p-3 border border-b-[#202020] flex items-center">
             <SidebarTrigger  />
             <WorkspaceDropdown userId={user.id} privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces}
                                collaboratingWorkspaces={collaboratingWorkspaces}

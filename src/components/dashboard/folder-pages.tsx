@@ -7,6 +7,7 @@ import {v4 as uuidv4} from "uuid";
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {Separator} from "@/components/ui/separator";
 import {PlusIcon} from "lucide-react";
+import {redirect} from "next/navigation";
 
 
 const FolderPages =  ({folderId, workspaceId} : {folderId : string,workspaceId : string}) => {
@@ -49,7 +50,9 @@ const FolderPages =  ({folderId, workspaceId} : {folderId : string,workspaceId :
             </div>
             {pages.map((page, i) => (
                 <div key={i}>
-                    <div className="text-sm">
+                    <div onClick={() => {
+                        redirect(`/${workspaceId}/${folderId}/${page.id}`)
+                    }} className="text-sm">
                         {page.title}
                     </div>
                     <Separator className="my-2"/>
