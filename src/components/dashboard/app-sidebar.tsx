@@ -4,7 +4,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupConte
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import {getFolders, getUserData} from "@/utils/supabase/queries"
 import FoldersDropdown from "@/components/dashboard/folders-dropdown";
-import {text, timestamp, uuid} from "drizzle-orm/pg-core";
 
 const getCachedUser = cache(async () => {
     const supabase = await createClient()

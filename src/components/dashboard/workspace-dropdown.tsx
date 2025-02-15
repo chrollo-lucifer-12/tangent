@@ -2,12 +2,6 @@
 
 import {workspace} from "@/lib/supabase/supabase.types";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {Button} from "@/components/ui/button";
 import {ChevronsUpDown, PlusCircleIcon} from "lucide-react";
 import Image from "next/image";
 import {createClient} from "@/utils/supabase/client";
@@ -43,21 +37,19 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
     const privateStates = usePrivateWorkspaces();
     const sharedStates = useSharedWorkspaces()
     const collaboratingStates = useCollaboratingWorkspaces();
-    const router = useRouter();
+    //const router = useRouter();
 
     useEffect(() => {
-        actions.resetWorkspaces();
-        privateWorkspaces.map((w) => {
-            actions.changePrivateWorkspaces(w);
-        })
-        sharedWorkspaces.map((w) => {
-            actions.changeSharedWorkspaces(w);
-        })
-        collaboratingWorkspaces.map((w) => {
-            actions.changeCollaboratingWorkspaces(w);
-        })
-    }, []);
 
+        actions.changePrivateWorkspaces(privateWorkspaces);
+
+
+        actions.changeSharedWorkspaces(sharedWorkspaces);
+
+
+        actions.changeCollaboratingWorkspaces(collaboratingWorkspaces);
+
+    }, []);
 
 
     const [selectedOption, setSelectedOption] = useState(defaultValue);
@@ -88,7 +80,7 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                 <Dialog>
                     <DialogTitle></DialogTitle>
                     <DialogTrigger>
-                        <PlusCircleIcon className="text-[#919297] hover:text-white transition duration-200" />
+                        <PlusCircleIcon className="text-[#919297] hover:text-white transition duration-200"/>
                     </DialogTrigger>
                     <DialogContent>
                         <DashboardSetup userId={userId}/>
@@ -96,7 +88,8 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                 </Dialog>
             </div>
 
-            <SelectContent className="bg-[#18181a] w-[250px]"><span className="text-[10px] text-[#919297] p-2 m-2">Workspaces</span>
+            <SelectContent className="bg-[#18181a] w-[250px]"><span
+                className="text-[10px] text-[#919297] p-2 m-2">Workspaces</span>
                 <SelectGroup>
                     {
                         privateStates.map((workspace, i) => (
@@ -114,12 +107,12 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                     {
                         sharedStates.map((workspace, i) => (
 
-                                <Link href={`/dashboard/${workspace.id}`} key={i}
-                                      className="flex items-center text-[#919297] rounded-md gap-6 p-2 pl-6 pr-6 hover:text-white hover:bg-[#26262B] hover:ring-1 transition duration-300">
-                                    {/*<Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}*/}
-                                    {/*       className="rounded-full"/>*/}
-                                    <p>{workspace?.title}</p>
-                                </Link>
+                            <Link href={`/dashboard/${workspace.id}`} key={i}
+                                  className="flex items-center text-[#919297] rounded-md gap-6 p-2 pl-6 pr-6 hover:text-white hover:bg-[#26262B] hover:ring-1 transition duration-300">
+                                {/*<Image priority src={getLogo(workspace.logo)} alt="workspace logo" width={20} height={20}*/}
+                                {/*       className="rounded-full"/>*/}
+                                <p>{workspace?.title}</p>
+                            </Link>
 
 
                         ))

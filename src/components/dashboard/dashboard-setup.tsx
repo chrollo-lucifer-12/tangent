@@ -1,13 +1,13 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { workspaceSchema } from "@/utils/constants";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
-import {createWorkspace} from "@/utils/supabase/queries";
+import {createWorkspace, revalidateDashboard} from "@/utils/supabase/queries";
 import {Label} from "@/components/ui/label";
 import {
     DropdownMenu,
@@ -22,7 +22,6 @@ import {Separator} from "@/components/ui/separator";
 
 const DashboardSetup = ({ userId }: { userId: string }) => {
 
-    const actions = useBearActions();
     const [permission, setPermission] = useState("Private")
     const [openSheet, setOpenSheet] = useState(false);
     const [addedMembers, setAddedMembers] = useState<{ id : string | null, email: string | null, image: string | null }[]>([]);
@@ -40,12 +39,7 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
         const file = values.file?.[0];
         const res = await createWorkspace(values.workspaceName, file, userId, addedMembers);
         reset();
-        if (res.type === "private") {
-            actions.changePrivateWorkspaces(res.data);
-        }
-        else {
-            actions.changeCollaboratingWorkspaces(res.data!);
-        }
+        await revalidateDashboard();
     }
 
     return (

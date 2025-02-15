@@ -10,23 +10,24 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 import {
-    ContextMenu,
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuTrigger,
-} from "@/components/ui/context-menu"
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 import {Plus} from "lucide-react";
 import {useBearActions, useWorkspaceFolders} from "@/lib/providers/state-provider";
-import {createFolder, createPage, renameFolder} from "@/utils/supabase/queries";
+import {createFolder, renameFolder, revalidateDashboard} from "@/utils/supabase/queries";
 import {Input} from "@/components/ui/input";
+import FolderPages from "@/components/dashboard/folder-pages";
+import {revalidatePath} from "next/cache";
 interface FoldersDropdownProps {
     workspaceId : string
     workspaceFolders : Folder[]
 }
 
 const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspaceFolders}) => {
-
     const actions = useBearActions()
     const folders = useWorkspaceFolders()
     const [editingFolder, setEditingFolder] = useState<string | null>();
@@ -34,13 +35,7 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
     const [selectedFolder, setSelectedFolder] = useState<string | null>();
 
     useEffect(() => {
-        actions.resetFolders();
-        const titles: { [key: string]: string } = {};
-        workspaceFolders.map((folder) => {
-            actions.changeworkspaceFolders(folder);
-            titles[folder.id] = folder.title;
-        })
-        setFolderTitles(titles);
+        actions.changeworkspaceFolders(workspaceFolders)
     }, [workspaceId, workspaceFolders])
 
     async function handleClick() {
@@ -57,33 +52,17 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
         }
         const {data, error} = await createFolder(newFolder);
         if (!error) {
-            actions.changeworkspaceFolders(newFolder);
+            await revalidateDashboard();
         }
     }
 
-    async function handleNameChange () {
+    async function handleNameChange() {
         if (!editingFolder) return;
-        actions.renameWorkspaceFolder(folderTitles[editingFolder], editingFolder)
         setEditingFolder(null);
-        await renameFolder(editingFolder,folderTitles[editingFolder]);
+        await renameFolder(editingFolder, folderTitles[editingFolder]);
+        await revalidateDashboard();
     }
 
-    async function handleCreatePage () {
-        if (!selectedFolder) return;
-        const newFile : File = {
-            id: uuidv4(),
-            folderId: selectedFolder,
-            title: "New Page",
-            data: "",
-            iconId: "",
-            inTrash: "",
-            bannerUrl: "",
-            workspaceId: workspaceId,
-            createdAt: new Date().toISOString(),
-            logo: ""
-        }
-        await createPage(newFile);
-    }
 
     return (
         <div className="flex flex-col w-full items-center  gap-6 h-fit rounded-md sticky mt-2">
@@ -98,19 +77,23 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
                     folders.map((folder, i) => (
                         <Accordion type="multiple" key={i}>
                             <AccordionItem value="item-1">
-                                <AccordionTrigger className="text-[#5d5d5d] hover:text-white transition duration-200 hover:no-underline" onClick={() => {
-                                    if (selectedFolder===folder.id) {
-                                        setSelectedFolder(null);
-                                    }
-                                    else {
-                                        setSelectedFolder(folder.id)
-                                    }
-                                }}>📁
+                                <AccordionTrigger
+                                    className="text-[#5d5d5d] hover:text-white transition duration-200 hover:no-underline"
+                                    onClick={() => {
+                                        if (selectedFolder === folder.id) {
+                                            setSelectedFolder(null);
+                                        } else {
+                                            setSelectedFolder(folder.id)
+                                        }
+                                    }}>📁
                                     {
                                         editingFolder === folder.id ? (<Input
                                             autoFocus
                                             value={folderTitles[folder.id] || ""}
-                                            onChange={(e) => setFolderTitles((prev) => ({ ...prev, [folder.id]: e.target.value }))}
+                                            onChange={(e) => setFolderTitles((prev) => ({
+                                                ...prev,
+                                                [folder.id]: e.target.value
+                                            }))}
                                             onBlur={() => {
                                                 setEditingFolder(null)
                                             }}
@@ -120,24 +103,16 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
                                                 }
                                             }}
                                         />) : (
-                                            <>
-                                            <ContextMenu>
-                                                <ContextMenuTrigger>
-                                                    <span className={`${selectedFolder === folder.id && "text-white"}`}
-                                                          onDoubleClick={() => {
-                                                              setEditingFolder(folder.id)
-                                                          }}>{folder.title}</span>
-                                                </ContextMenuTrigger>
-                                                <ContextMenuContent>
-                                                    <ContextMenuItem onClick={handleCreatePage} className="font-extralight">Create Page</ContextMenuItem>
-                                                </ContextMenuContent>
-                                            </ContextMenu>
-                                            </>
+
+                                            <span className={`${selectedFolder === folder.id && "text-white"}`}
+                                                  onDoubleClick={() => {
+                                                      setEditingFolder(folder.id)
+                                                  }}>{folder.title}</span>
                                         )
                                     }
                                 </AccordionTrigger>
                                 <AccordionContent>
-
+                                    <FolderPages folderId={selectedFolder!} workspaceId={workspaceId}/>
                                 </AccordionContent>
                             </AccordionItem>
                         </Accordion>

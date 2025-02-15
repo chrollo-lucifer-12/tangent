@@ -6,6 +6,11 @@ import db from "@/lib/supabase/db";
 import {workspaces, folders, users, collaborators, files} from "../../../migrations/schema";
 import {and, eq, notExists} from "drizzle-orm";
 import {Folder, Subscription, workspace, File} from "../../lib/supabase/supabase.types";
+import {revalidatePath} from "next/cache";
+
+export async function revalidateDashboard() {
+    revalidatePath("/dashboard");
+}
 
 export async function getUserData(userId : string) {
     const data = await db.select().from(users).where(eq(users.id,userId));
