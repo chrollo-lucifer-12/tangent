@@ -33,7 +33,7 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
     const {data,error} = await getFolders(workspaceId);
 
     return (
-        <Sidebar className="bg-[#171717] w-[220px]">
+        <Sidebar className="bg-[#171717]">
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel className="text-[#2b2b2b]">Your workspaces</SidebarGroupLabel>

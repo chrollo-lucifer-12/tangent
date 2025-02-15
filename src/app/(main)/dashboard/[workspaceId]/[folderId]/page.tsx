@@ -1,8 +1,16 @@
 import {redirect} from "next/navigation";
-import {getPages} from "@/utils/supabase/queries";
+import {getPage} from "@/utils/supabase/queries";
 
-const Page =  ({params} : {params : {folderId : string, workspaceId : string}}) => {
-   redirect(`/dashboard/${params.workspaceId}/${params.folderId}/1`)
+const Page = async ({params} : {params : {folderId : string, workspaceId : string}}) => {
+    const pageId = await getPage(params.folderId)
+
+    if (!pageId) {
+        return <div>
+            Start by creating a page
+        </div>
+    }
+
+   redirect(`/dashboard/${params.workspaceId}/${params.folderId}/${pageId}`)
 }
 
 export default Page

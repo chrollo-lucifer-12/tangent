@@ -1,9 +1,9 @@
 import QuillEditor from "@/components/quill-editor/quill-editor";
 
-const Page = async ({params} : {params : {folderId : string, workspaceId : string, fileId : string}}) => {
-    const {folderId, workspaceId, fileId} = await params
+const Page = ({params} : {params : {folderId : string, workspaceId : string, fileId : string}}) => {
+    const {folderId, workspaceId, fileId} = params
     return <div>
-        <QuillEditor/>
+        <QuillEditor fileId={fileId} folderId={folderId} workspaceId={workspaceId} />
     </div>
 }
 

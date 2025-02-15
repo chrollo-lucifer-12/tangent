@@ -202,6 +202,11 @@ export async function getSharedWorkspaces (userId : string) {
     return sharedWorkspaces;
 }
 
+export async function getPage (folderId : string) {
+    const data = await db.select().from(files).where(eq(files.folderId,folderId));
+    return data[0].id;
+}
+
 export async function searchEmails (searchTerm : string) {
     if (!searchTerm) return [];
     const data = await db.query.users.findMany({where : (s,{ilike}) => ilike(s.email,`%${searchTerm}%`)})
