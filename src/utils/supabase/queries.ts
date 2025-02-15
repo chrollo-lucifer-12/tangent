@@ -3,9 +3,9 @@
 import {v4, validate} from "uuid";
 import {createClient} from "@/utils/supabase/server";
 import db from "@/lib/supabase/db";
-import {workspaces, folders, users, collaborators} from "../../../migrations/schema";
+import {workspaces, folders, users, collaborators, files} from "../../../migrations/schema";
 import {and, eq, notExists} from "drizzle-orm";
-import {Folder, Subscription, workspace} from "../../lib/supabase/supabase.types";
+import {Folder, Subscription, workspace, File} from "../../lib/supabase/supabase.types";
 
 export async function getUserData(userId : string) {
     const data = await db.select().from(users).where(eq(users.id,userId));
@@ -103,6 +103,20 @@ export async function getFolders (workspaceId : string) {
         return { data: results, error: null };
     } catch (error) {
         return { data: null, error: 'Error' };
+    }
+}
+
+export async function createPage (file : File) {
+    await db.insert(files).values(file);
+}
+
+export async function getPages (folderId : string) {
+    if (!folderId) return [];
+    try {
+        const res : File[] | [] = await db.select().from(files).where(eq(files.folderId,folderId));
+        return res;
+    } catch (e) {
+        return [];
     }
 }
 
