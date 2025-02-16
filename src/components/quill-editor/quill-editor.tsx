@@ -1,7 +1,8 @@
 "use client"
 
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useMemo, useState} from "react";
 import "quill/dist/quill.snow.css"
+import useSocket from "@/hooks/use-socket";
 
 interface QuillEditorProps {
     fileId : string
@@ -29,6 +30,10 @@ const TOOLBAR_OPTIONS = [
 const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}) => {
 
     const [quill, setQuill] = useState<any>(null);
+
+    const {socket, isConnected} = useSocket()
+
+    console.log(isConnected);
 
     const wrappedRef = useCallback(async (wrapper) => {
         if (!wrapper) return;
