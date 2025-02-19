@@ -1,6 +1,6 @@
 "use client"
 
-import React, {useCallback, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import "quill/dist/quill.snow.css"
 import useSocket from "@/hooks/use-socket";
 
@@ -8,6 +8,7 @@ interface QuillEditorProps {
     fileId : string
     folderId : string
     workspaceId : string
+    socket : WebSocket
 }
 
 const TOOLBAR_OPTIONS = [
@@ -27,13 +28,42 @@ const TOOLBAR_OPTIONS = [
     ['clean'],
 ];
 
-const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}) => {
+const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId,socket}) => {
 
     const [quill, setQuill] = useState<any>(null);
 
-    const {socket, isConnected} = useSocket()
+    useEffect(() => {
+        if (!quill) return;
 
-    console.log(isConnected);
+        const handleTextChange = (delta: any, oldDelta: any, source: string) => {
+            if (source === "user") {
+                socket?.send(JSON.stringify({
+                    type: "send_message",
+                    data: quill.getContents().ops,
+                    workspaceId,
+                    folderId,
+                    fileId
+                }));
+            }
+        };
+
+        function messageHandler(event) {
+            const message = JSON.parse(event.data);
+            if (message.type === "receive_message") {
+                quill.setContents({ops : message.data})
+                console.log(message);
+            }
+        }
+
+        socket.addEventListener("message", messageHandler);
+
+        quill.on('text-change', handleTextChange);
+
+        return () => {
+            quill.off('text-change', handleTextChange);
+            socket.removeEventListener("message", messageHandler);
+        };
+    }, [quill,socket]);
 
     const wrappedRef = useCallback(async (wrapper) => {
         if (!wrapper) return;
@@ -41,7 +71,6 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}
         const editor = document.createElement("div");
         wrapper.append(editor);
         const Quill = (await import("quill")).default
-        // cursors
         const q = new Quill(editor, {
             theme: "snow",
             modules: {
