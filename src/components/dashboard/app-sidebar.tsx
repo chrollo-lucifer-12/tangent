@@ -21,6 +21,7 @@ import {
 import FoldersDropdown from "@/components/dashboard/folders-dropdown";
 import WorkspaceDropdown from "@/components/dashboard/workspace-dropdown";
 import {NavUser} from "@/components/dashboard/nav-user";
+import Terminal from "@/components/dashboard/terminal";
 
 const getCachedUser = cache(async () => {
     const supabase = await createClient()
@@ -63,6 +64,7 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
             </SidebarHeader>
             <SidebarContent>
                 <FoldersDropdown workspaceId={workspaceId} workspaceFolders={data ? data : []} />
+                <Terminal/>
             </SidebarContent>
             <SidebarFooter>
                 <NavUser imageUrl={user.avatarUrl} fullname={user.fullname!} email={user.email!}/>

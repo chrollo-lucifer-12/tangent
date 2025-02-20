@@ -107,6 +107,7 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                         <div className="font-medium text-muted-foreground">Add workspace</div>
                     </DropdownMenuItem>
                     <Dialog open={isOpen}>
+                        <DialogTrigger asChild />
                         <DialogTitle></DialogTitle>
                         <DialogContent>
 
