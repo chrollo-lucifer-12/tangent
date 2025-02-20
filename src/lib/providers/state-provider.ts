@@ -5,6 +5,9 @@ type userState = {
     email : string,
     fullname : string,
     avatarUrl : any,
+    currentWorkspace : string,
+    currentFolder : string,
+    currentPage : string
     pages: File[],
     workspaceFolders : Folder[],
     privateWorkspaces : workspace[],
@@ -14,6 +17,9 @@ type userState = {
         changeEmail : (newEmail : string) => void,
         changeFullName : (newFullName : string) => void
         changeAvatarUrl : (newFile : any) => void
+        setWorkspaceName : (title : string) => void
+        setFolderName : (title : string) => void
+        setPageName : (title : string) => void
         changePrivateWorkspaces : (newWorkspaces : workspace[]) => void
         changeSharedWorkspaces : (newWorkspaces : workspace[]) => void
         changeCollaboratingWorkspaces : (newWorkspaces : workspace[]) => void
@@ -27,12 +33,18 @@ const useBearStore = create<userState>((set) => ({
     email : "user@gamil.com",
     fullname : "user",
     avatarUrl : "",
+    currentWorkspace : "",
+    currentFolder : "",
+    currentPage : "",
     pages: [],
     workspaceFolders : [],
     privateWorkspaces : [],
     sharedWorkspaces : [],
     collaboratingWorkspaces : [],
     actions: {
+        setFolderName : (title : string) => set({currentFolder : title}),
+        setWorkspaceName : (title : string) => set({currentWorkspace : title}),
+        setPageName : (title : string) => set({currentPage : title}),
         changeEmail: (newEmail: string) => set({email: newEmail}),
         changeFullName: (newFullName: string) => set({fullname: newFullName}),
         changeAvatarUrl: (newFile: any) => set({avatarUrl: newFile}),
@@ -48,6 +60,9 @@ const useBearStore = create<userState>((set) => ({
 }))
 
 export const useEmail = () => useBearStore((state) => state.email)
+export const useWorkspace = () => useBearStore((state) => state.currentWorkspace)
+export const useFolder = () => useBearStore((state) => state.currentFolder)
+export const usePage = () => useBearStore((state) => state.currentPage)
 export const useFullName = () => useBearStore((state) => state.fullname)
 export const useAvatar = () => useBearStore((state) => state.avatarUrl)
 export const usePrivateWorkspaces = () => useBearStore((state) => state.privateWorkspaces)

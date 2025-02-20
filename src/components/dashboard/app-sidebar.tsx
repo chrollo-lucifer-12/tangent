@@ -1,9 +1,26 @@
 import { cache } from 'react'
 import { createClient } from "@/utils/supabase/server"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from "@/components/ui/sidebar"
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu
+} from "@/components/ui/sidebar"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
-import {getFolders, getUserData} from "@/utils/supabase/queries"
+import {
+    getCollaborativeWorkspaces,
+    getFolders,
+    getPrivateWorkspaces,
+    getSharedWorkspaces,
+    getUserData
+} from "@/utils/supabase/queries"
 import FoldersDropdown from "@/components/dashboard/folders-dropdown";
+import WorkspaceDropdown from "@/components/dashboard/workspace-dropdown";
+import {NavUser} from "@/components/dashboard/nav-user";
 
 const getCachedUser = cache(async () => {
     const supabase = await createClient()
@@ -27,36 +44,28 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
 
     if (!user) {
         //console.log("No user found, returning early")
-        return null
+        return <div>
+            no user found
+        </div>
     }
+
+    const privateWorkspaces = await getPrivateWorkspaces(user.id);
+    const collaboratingWorkspaces = await getCollaborativeWorkspaces(user.id);
+    const sharedWorkspaces = await getSharedWorkspaces(user.id);
 
     const {data,error} = await getFolders(workspaceId);
 
     return (
-        <Sidebar className="bg-[#171717]">
+        <Sidebar collapsible="icon">
+            <SidebarHeader>
+                <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces} collaboratingWorkspaces={collaboratingWorkspaces} defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]
+                    .find((workspace) => workspace.id === workspaceId)} userId={user.id}/>
+            </SidebarHeader>
             <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupLabel className="text-[#2b2b2b]">Your workspaces</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <FoldersDropdown workspaceId={workspaceId} workspaceFolders={data ? data : []} />
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                <FoldersDropdown workspaceId={workspaceId} workspaceFolders={data ? data : []} />
             </SidebarContent>
             <SidebarFooter>
-                <div className="flex gap-4 m-4 items-center">
-                    <div className="relative group">
-                        <div className="absolute -inset-2 bg-pink-100 rounded-full blur bg-gradient-to-r from-[#035C76] via-[#03433D] to-[#106E45] opacity-0 group-hover:opacity-100"></div>
-                        <Avatar className="hover:cursor-pointer hover:scale-110 transition duration-300 relative">
-                            <AvatarImage src={user.avatarUrl} />
-                        </Avatar>
-                    </div>
-                    <div className="flex flex-col p-2">
-                        <span className="text-[#727272]">{user.fullname}</span>
-                        <span className="font-light text-[12px] text-[#3f3f3f]">{user.email}</span>
-                    </div>
-                </div>
+                <NavUser imageUrl={user.avatarUrl} fullname={user.fullname!} email={user.email!}/>
             </SidebarFooter>
         </Sidebar>
     )

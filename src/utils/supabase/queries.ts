@@ -14,7 +14,22 @@ export async function revalidateDashboard() {
 
 export async function getUserData(userId : string) {
     const data = await db.select().from(users).where(eq(users.id,userId));
-    return {fullname : data[0].fullName, email : data[0].email, avatarUrl : data[0].avatarUrl}
+    return {id : data[0].id, fullname : data[0].fullName, email : data[0].email, avatarUrl : data[0].avatarUrl}
+}
+
+export async function getWorkspaceTitle (workspaceId : string) {
+    const data = await db.select({title : workspaces.title}).from(workspaces).where(eq(workspaces.id,workspaceId));
+    return data[0].title;
+}
+
+export async function getFolderTitle (folderId : string) {
+    const data = await db.select({title : folders.title}).from(folders).where(eq(folders.id,folderId));
+    return data[0].title;
+}
+
+export async function getFileTitle (fileId : string) {
+    const data = await db.select({title : files.title}).from(files).where(eq(files.id,fileId));
+    return data[0].title;
 }
 
 export async function createWorkspace(workspaceName : string, file : any, userId : string, collaboratorsList : { id : string | null, email: string | null, image: string | null }[]) {

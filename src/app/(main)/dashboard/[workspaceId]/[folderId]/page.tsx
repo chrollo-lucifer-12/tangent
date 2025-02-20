@@ -1,16 +1,25 @@
-import {redirect} from "next/navigation";
-import {getPage} from "@/utils/supabase/queries";
+"use client"
+import {getFolderTitle} from "@/utils/supabase/queries";
+import {useParams} from "next/navigation";
+import {useBearActions} from "@/lib/providers/state-provider";
+import {useEffect} from "react";
 
-const Page = async ({params} : {params : {folderId : string, workspaceId : string}}) => {
-    const pageId = await getPage(params.folderId)
+const Page =  () => {
 
-    if (!pageId) {
-        return <div>
-            Start by creating a page
-        </div>
-    }
+    const params: { workspaceId: string, folderId : string } = useParams();
+    const actions = useBearActions();
 
-   redirect(`/dashboard/${params.workspaceId}/${params.folderId}/${pageId}`)
+    useEffect(() => {
+        async function setTitle () {
+            const data = await getFolderTitle(params.folderId);
+            actions.setFolderName(data[0].title);
+        }
+        setTitle();
+    }, []);
+
+    return <div>
+
+    </div>
 }
 
 export default Page

@@ -1,35 +1,28 @@
 "use client"
-import QuillEditor from "@/components/quill-editor/quill-editor";
-import FlowEditor from "@/components/flow-editor/flow-editor";
-import useSocket from "@/hooks/use-socket";
-import {useEffect} from "react";
-import {createClient} from "@/utils/supabase/client";
+import React, {useEffect} from "react";
+import {useParams} from "next/navigation";
+import {getFileTitle, getFolderTitle, getWorkspaceTitle} from "@/utils/supabase/queries";
+import {useBearActions} from "@/lib/providers/state-provider";
 
-const Page = ({params} : {params : {folderId : string, workspaceId : string, fileId : string}}) => {
-    const {folderId, workspaceId, fileId} = params
+const Page =  () => {
 
-
-    const {socket, isConnected} = useSocket();
+    const params : {workspaceId : string, folderId : string, fileId : string} = useParams();
+    const actions = useBearActions();
 
     useEffect(() => {
-        async function joinRoom () {
-            if (socket && isConnected) {
-                const supabase = createClient();
-                const {data: {user}} = await supabase.auth.getUser()
-                console.log(user);
-                socket.send(JSON.stringify({
-                    type: "join_room",
-                    username : user?.id,
-                    workspaceId
-                }))
-            }
+        async function setTitle () {
+            Promise.all([getWorkspaceTitle(params.workspaceId), getFolderTitle(params.folderId), getFileTitle(params.fileId)]).then(([workspaceTitle, folderTitle, fileTitle]) => {
+                actions.setWorkspaceName(workspaceTitle)
+                actions.setFolderName(folderTitle)
+                actions.setPageName(fileTitle)
+            });
         }
-        joinRoom()
-    }, [workspaceId, socket, isConnected]);
-
+        setTitle()
+    }, []);
 
     return <div>
-        <QuillEditor fileId={fileId} folderId={folderId} workspaceId={workspaceId} socket = {socket} />
+        file
+        {/*<QuillEditor fileId={fileId} folderId={folderId} workspaceId={workspaceId} socket = {socket} />*/}
         {/*<FlowEditor/>*/}
     </div>
 }
