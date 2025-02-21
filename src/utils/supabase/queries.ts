@@ -7,11 +7,6 @@ import {and, eq, notExists} from "drizzle-orm";
 import {Folder, Subscription, workspace, File} from "../../lib/supabase/supabase.types";
 import {revalidatePath} from "next/cache";
 
-import Docker from "dockerode";
-
-const docker = new Docker();
-const CONTAINER_NAME = "js-executor";
-
 export async function addColaborator (workspaceId : string, memberId : string) {
     try {
         await db.insert(collaborators).values({
@@ -244,94 +239,6 @@ export async function searchEmails (searchTerm : string) {
         return {id : user.id, email : user.email, image: data.publicUrl}
     });
     return usersWithImages;
-}
-
-async function ensureContainerRunning() {
-    try {
-        let container;
-
-        try {
-            // Try to get the container
-            container = docker.getContainer(CONTAINER_NAME);
-            const containerInfo = await container.inspect();
-
-            if (!containerInfo.State.Running) {
-                // If container exists but is stopped, restart it
-                await container.start();
-            }
-        } catch (error) {
-            console.log(error);
-            container = await docker.createContainer({
-                Image: "node:18-alpine",
-                name: CONTAINER_NAME,
-                AttachStdin: true,
-                AttachStdout: true,
-                AttachStderr: true,
-                OpenStdin: true,
-                Tty: false,
-                HostConfig: {
-                    Memory: 128 * 1024 * 1024,
-                    NanoCpus: 500000000,
-                },
-                Cmd: ["node"],
-            });
-
-            await container.start();
-            container = docker.getContainer(container.id);
-        }
-    } catch (error) {
-        console.error("Error ensuring container is running:", error);
-    }
-}
-
-export async function executeCode(code: string): Promise<string> {
-    if (!code) {
-        return "No Code Provided";
-    }
-
-    await ensureContainerRunning();
-    const container = docker.getContainer(CONTAINER_NAME);
-
-    try {
-        const exec = await container.exec({
-            AttachStdout: true,
-            AttachStderr: true,
-            AttachStdin: true,
-            Tty: false,
-            Cmd: ["node"],
-        });
-
-        const stream = await exec.start({ hijack: true, stdin: true });
-
-        return new Promise((resolve, reject) => {
-            let output = "";
-            let errorOutput = "";
-
-            stream.on("data", (chunk) => (output += chunk.toString()));
-            stream.on("stderr", (chunk) => (errorOutput += chunk.toString()));
-
-            stream.on("end", () => {
-                if (errorOutput) {
-                    reject(errorOutput.trim());
-                } else {
-                    resolve(output.trim());
-                }
-            });
-
-            stream.write(code + "\n");
-            stream.end();
-        });
-    } catch (error: any) {
-        return `Error: ${error.message}`;
-    }
-}
-
-export async function updateEditorContent (folderId : string, fileId : string, workspaceId : string, content : string) {
-    try {
-        await db.update(files).set({data: content}).where(eq(files.id,fileId));
-    } catch (e) {
-        console.log(e);
-    }
 }
 
 export async function getEditorContent (fileId : string) {
