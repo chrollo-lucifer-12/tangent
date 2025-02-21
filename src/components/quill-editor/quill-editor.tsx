@@ -1,14 +1,14 @@
 "use client"
 
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import "quill/dist/quill.snow.css"
-import useSocket from "@/hooks/use-socket";
+import {useWebSocket} from "@/lib/providers/state-provider";
+import {getEditorContent, updateEditorContent} from "@/utils/supabase/queries";
 
 interface QuillEditorProps {
     fileId : string
     folderId : string
     workspaceId : string
-    socket : WebSocket
 }
 
 const TOOLBAR_OPTIONS = [
@@ -28,44 +28,60 @@ const TOOLBAR_OPTIONS = [
     ['clean'],
 ];
 
-const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId,socket}) => {
+const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}) => {
 
     const [quill, setQuill] = useState<any>(null);
+    const socket = useWebSocket();
+
+    useEffect(() => {
+        if (quill) {
+        async function fetchEditorData () {
+            const contents = await getEditorContent(fileId);
+            quill.setContents({ops : contents})
+        }
+        fetchEditorData();}
+    },[quill])
 
     useEffect(() => {
         if (!quill) return;
 
-        const handleTextChange = (delta: any, oldDelta: any, source: string) => {
+        const handleTextChange = async (delta: any, oldDelta: any, source: string) => {
             if (source === "user") {
                 socket?.send(JSON.stringify({
-                    type: "send_message",
-                    data: quill.getContents().ops,
-                    workspaceId,
-                    folderId,
-                    fileId
+                     type: "update_editor",
+                     data: quill.getContents().ops,
+                     workspaceId,
+                     folderId,
+                     fileId
                 }));
+                await updateEditorContent(folderId, fileId, workspaceId, JSON.stringify(quill.getContents().ops))
             }
         };
 
-        function messageHandler(event) {
+        function messageHandler(event : any) {
             const message = JSON.parse(event.data);
-            if (message.type === "receive_message") {
-                quill.setContents({ops : message.data})
-                console.log(message);
+            if (message.type === "update_editor") {
+                if (workspaceId === message.workspaceId && folderId === message.folderId && fileId === message.fileId) {
+                    const selection = quill.getSelection();
+                    quill.setContents({ops: message.data})
+                    if (selection) {
+                        quill.setSelection(selection);
+                    }
+                }
             }
         }
 
-        socket.addEventListener("message", messageHandler);
+        socket?.addEventListener("message", messageHandler);
 
         quill.on('text-change', handleTextChange);
 
         return () => {
             quill.off('text-change', handleTextChange);
-            socket.removeEventListener("message", messageHandler);
+            socket?.removeEventListener("message", messageHandler);
         };
     }, [quill,socket]);
 
-    const wrappedRef = useCallback(async (wrapper) => {
+    const wrappedRef = useCallback(async (wrapper : any) => {
         if (!wrapper) return;
         wrapper.innerHTML = ""
         const editor = document.createElement("div");
@@ -74,7 +90,7 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId,
         const q = new Quill(editor, {
             theme: "snow",
             modules: {
-                toolbar: TOOLBAR_OPTIONS
+                toolbar: TOOLBAR_OPTIONS,
             }
         })
         setQuill(q);
@@ -82,7 +98,7 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId,
 
     return <>
         <div className="flex justify-center items-center relative mt-2 items-center ">
-            <div id="container" className="w-full h-screen border-0 border-none focus:border-none" ref={wrappedRef}>
+            <div id="container" className="w-full h-screen border-0 border-none focus:border-none" ref={wrappedRef} style={{border : "none"}}>
             </div>
         </div>
     </>

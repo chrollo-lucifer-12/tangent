@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import React from "react";
 import {useFolder, usePage, useWorkspace} from "@/lib/providers/state-provider";
+import {Button} from "@/components/ui/button";
+import MembersNav from "@/components/dashboard/members-nav";
 
 const SidebarHeaderBreadCrumb = () => {
 
@@ -19,7 +21,7 @@ const SidebarHeaderBreadCrumb = () => {
 
     return <header
         className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
+        <div className="flex items-center gap-2 px-4 justify-between">
             <SidebarTrigger className="-ml-1"/>
             <Separator orientation="vertical" className="mr-2 h-4"/>
             <Breadcrumb>
@@ -53,6 +55,7 @@ const SidebarHeaderBreadCrumb = () => {
                     }
                 </BreadcrumbList>
             </Breadcrumb>
+            <MembersNav/>
         </div>
     </header>
 }

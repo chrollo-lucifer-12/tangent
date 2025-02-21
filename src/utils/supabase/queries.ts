@@ -8,6 +8,32 @@ import {and, eq, notExists} from "drizzle-orm";
 import {Folder, Subscription, workspace, File} from "../../lib/supabase/supabase.types";
 import {revalidatePath} from "next/cache";
 
+import Docker from "dockerode";
+
+const docker = new Docker();
+const CONTAINER_NAME = "js-executor";
+
+export async function addColaborator (workspaceId : string, memberId : string) {
+    try {
+        await db.insert(collaborators).values({
+            workspaceId,
+            userId : memberId,
+            createdAt : new Date().toISOString()
+        })
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+export async function getCollaborators (workspaceId : string) {
+    try {
+        const data= await db.select({id : users.id, fullname : users.fullName, imageUrl : users.avatarUrl}).from(collaborators).innerJoin(users,eq(collaborators.userId,users.id)).where(eq(collaborators.workspaceId,workspaceId));
+        return data;
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 export async function revalidateDashboard() {
     revalidatePath("/dashboard");
 }
@@ -32,7 +58,7 @@ export async function getFileTitle (fileId : string) {
     return data[0].title;
 }
 
-export async function createWorkspace(workspaceName : string, file : any, userId : string, collaboratorsList : { id : string | null, email: string | null, image: string | null }[]) {
+export async function createWorkspace(workspaceName : string, file : any, userId : string) {
     const workspaceUUID = v4();
     const supabase = await createClient();
     let filePath = null;
@@ -45,7 +71,7 @@ export async function createWorkspace(workspaceName : string, file : any, userId
     }
 
     try {
-        const res = await db.insert(workspaces).values({
+         await db.insert(workspaces).values({
             id: workspaceUUID,
             title: workspaceName,
             workspaceOwner: userId,
@@ -55,22 +81,7 @@ export async function createWorkspace(workspaceName : string, file : any, userId
             iconId: "",
             inTrash: "",
             bannerUrl: "",
-        }).returning();
-        if (collaboratorsList.length) {
-            const collaboratorPayload: { userId: string, workspaceId: string, createdAt: string }[] = [];
-            collaboratorsList.map((collaborator) => {
-                collaboratorPayload.push({
-                    userId: collaborator.id!,
-                    workspaceId: workspaceUUID,
-                    createdAt: new Date().toISOString()
-                });
-            })
-            await db.insert(collaborators).values(collaboratorPayload);
-            return {data : res[0], success : true, type : "collab"}
-        }
-        else {
-            return {data : res[0], success : true, type : "private"}
-        }
+        })
     } catch (e) {
         console.log(e);
         return {data : null, success : false, type : null};
@@ -79,8 +90,8 @@ export async function createWorkspace(workspaceName : string, file : any, userId
 
 export async function createFolder (folder : Folder) {
     try {
-    await db.insert(folders).values(folder);
-    return {data : null, error : null}
+    const newFolder =  await db.insert(folders).values(folder).returning();
+    return {data : newFolder[0], error : null}
     } catch (e) {
         console.log(e);
         return {data : null, error : "error"}
@@ -232,4 +243,100 @@ export async function searchEmails (searchTerm : string) {
         return {id : user.id, email : user.email, image: data.publicUrl}
     });
     return usersWithImages;
+}
+
+async function ensureContainerRunning() {
+    try {
+        let container;
+
+        try {
+            // Try to get the container
+            container = docker.getContainer(CONTAINER_NAME);
+            const containerInfo = await container.inspect();
+
+            if (!containerInfo.State.Running) {
+                // If container exists but is stopped, restart it
+                await container.start();
+            }
+        } catch (error) {
+            container = await docker.createContainer({
+                Image: "node:18-alpine",
+                name: CONTAINER_NAME,
+                AttachStdin: true,
+                AttachStdout: true,
+                AttachStderr: true,
+                OpenStdin: true,
+                Tty: false,
+                HostConfig: {
+                    Memory: 128 * 1024 * 1024,
+                    NanoCpus: 500000000,
+                },
+                Cmd: ["node"],
+            });
+
+            await container.start();
+            container = docker.getContainer(container.id);
+        }
+    } catch (error) {
+        console.error("Error ensuring container is running:", error);
+    }
+}
+
+export async function executeCode(code: string): Promise<string> {
+    if (!code) {
+        return "No Code Provided";
+    }
+
+    await ensureContainerRunning();
+    const container = docker.getContainer(CONTAINER_NAME);
+
+    try {
+        const exec = await container.exec({
+            AttachStdout: true,
+            AttachStderr: true,
+            AttachStdin: true,
+            Tty: false,
+            Cmd: ["node"],
+        });
+
+        const stream = await exec.start({ hijack: true, stdin: true });
+
+        return new Promise((resolve, reject) => {
+            let output = "";
+            let errorOutput = "";
+
+            stream.on("data", (chunk) => (output += chunk.toString()));
+            stream.on("stderr", (chunk) => (errorOutput += chunk.toString()));
+
+            stream.on("end", () => {
+                if (errorOutput) {
+                    reject(errorOutput.trim());
+                } else {
+                    resolve(output.trim());
+                }
+            });
+
+            stream.write(code + "\n");
+            stream.end();
+        });
+    } catch (error: any) {
+        return `Error: ${error.message}`;
+    }
+}
+
+export async function updateEditorContent (folderId : string, fileId : string, workspaceId : string, content : string) {
+    try {
+        await db.update(files).set({data: content}).where(eq(files.id,fileId));
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+export async function getEditorContent (fileId : string) {
+    try {
+        const data = await db.select({contents : files.data}).from(files).where(eq(files.id, fileId));
+        return JSON.parse(data[0].contents!);
+    } catch (e) {
+        console.log(e);
+    }
 }

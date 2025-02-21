@@ -12,7 +12,7 @@ const Page =  () => {
     useEffect(() => {
         async function setTitle () {
             const data = await getFolderTitle(params.folderId);
-            actions.setFolderName(data[0].title);
+            actions.setFolderName(data);
         }
         setTitle();
     }, []);

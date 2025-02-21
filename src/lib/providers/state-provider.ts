@@ -3,8 +3,10 @@ import {Folder, workspace, File} from "@/lib/supabase/supabase.types";
 
 type userState = {
     email : string,
+    socket : WebSocket | null,
     fullname : string,
     avatarUrl : any,
+    members : {fullname : string | null, imageUrl : string | null, id : string}[] | undefined,
     currentWorkspace : string,
     currentFolder : string,
     currentPage : string
@@ -14,12 +16,14 @@ type userState = {
     sharedWorkspaces : workspace[],
     collaboratingWorkspaces : workspace[],
     actions: {
+        setSocket : (newSocket : WebSocket | null) => void,
         changeEmail : (newEmail : string) => void,
         changeFullName : (newFullName : string) => void
         changeAvatarUrl : (newFile : any) => void
         setWorkspaceName : (title : string) => void
         setFolderName : (title : string) => void
         setPageName : (title : string) => void
+        setMembers : ( members : {fullname : string | null, imageUrl : string | null, id : string}[] | undefined) => void
         changePrivateWorkspaces : (newWorkspaces : workspace[]) => void
         changeSharedWorkspaces : (newWorkspaces : workspace[]) => void
         changeCollaboratingWorkspaces : (newWorkspaces : workspace[]) => void
@@ -30,7 +34,7 @@ type userState = {
 }
 
 const useBearStore = create<userState>((set) => ({
-    email : "user@gamil.com",
+    email : "",
     fullname : "user",
     avatarUrl : "",
     currentWorkspace : "",
@@ -41,7 +45,11 @@ const useBearStore = create<userState>((set) => ({
     privateWorkspaces : [],
     sharedWorkspaces : [],
     collaboratingWorkspaces : [],
+    members : [],
+    socket : null,
     actions: {
+        setSocket : (newSocket : WebSocket | null) => set({socket : newSocket}),
+        setMembers : ( newmembers : {fullname : string | null, imageUrl : string | null, id : string}[] | undefined) => set({members : newmembers}),
         setFolderName : (title : string) => set({currentFolder : title}),
         setWorkspaceName : (title : string) => set({currentWorkspace : title}),
         setPageName : (title : string) => set({currentPage : title}),
@@ -70,6 +78,8 @@ export const useSharedWorkspaces = () => useBearStore((state) => state.sharedWor
 export const useCollaboratingWorkspaces = () => useBearStore((state) => state.collaboratingWorkspaces);
 export const useWorkspaceFolders = () => useBearStore((state) => state.workspaceFolders)
 export const usePages = () => useBearStore((state) => state.pages)
+export const useMembers = () => useBearStore((state) => state.members)
+export const useWebSocket = () => useBearStore((state) => state.socket)
 
 export const useBearActions = () =>
     useBearStore((state) => state.actions)

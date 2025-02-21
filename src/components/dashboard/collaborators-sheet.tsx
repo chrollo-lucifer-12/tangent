@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/command";
 
 import React, { useEffect, useState } from "react";
-import { searchEmails } from "@/utils/supabase/queries";
+import {addColaborator, searchEmails} from "@/utils/supabase/queries";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -22,19 +22,21 @@ import { X } from "lucide-react";
 interface CollaboratorsSheetProps {
     openSheet: boolean;
     setOpenSheet: (open: boolean) => void;
-    addedMembers: { id: string | null; email: string | null; image: string | null }[];
-    setAddedMembers: React.Dispatch<React.SetStateAction<any>>;
+    workspaceId : string
 }
 
 const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
                                                                    openSheet,
                                                                    setOpenSheet,
-                                                                   addedMembers,
-                                                                   setAddedMembers
+            workspaceId
                                                                }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
-    const [searchResults, setSearchResults] = useState<{ id: string | null; email: string | null; image: string | null }[]>([]);
+    const [searchResults, setSearchResults] = useState<{
+        id: string | null;
+        email: string | null;
+        image: string | null
+    }[]>([]);
 
     useEffect(() => {
         if (!searchTerm) {
@@ -52,10 +54,14 @@ const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
         return () => clearTimeout(timeout);
     }, [searchTerm]);
 
-    const addCollaborator = (collaborator: { id: string | null; email: string | null; image: string | null }) => {
-        if (!addedMembers.some((member) => member.id === collaborator.id)) {
-            setAddedMembers((prev) => [...prev, collaborator]);
-        }
+
+    const handleAddCollaborator = async (collaborator: {
+        id: string | null;
+        email: string | null;
+        image: string | null
+    }) => {
+        console.log("collab");
+        await addColaborator(workspaceId, collaborator.id!);
     };
 
     return (
@@ -69,7 +75,7 @@ const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
                         onClick={() => setOpenSheet(false)}
                         className="text-gray-500 hover:text-gray-800"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-5 h-5"/>
                     </Button>
                 </SheetHeader>
 
@@ -94,7 +100,6 @@ const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
                                     <CommandItem
                                         key={i}
                                         className="flex items-center gap-4 px-3 py-2 cursor-pointer hover:bg-gray-100 rounded-md"
-                                        onClick={() => addCollaborator(result)}
                                     >
                                         <Image
                                             src={result.image || "https://github.com/shadcn.png"}
@@ -104,6 +109,8 @@ const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
                                             className="rounded-full"
                                         />
                                         <span className="text-sm text-gray-700">{result.email}</span>
+                                        <Button variant="ghost"
+                                                onClick={() => (handleAddCollaborator(result))}>Add</Button>
                                     </CommandItem>
                                 ))}
                             </CommandGroup>
@@ -113,6 +120,6 @@ const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
             </SheetContent>
         </Sheet>
     );
-};
+}
 
 export default CollaboratorsSheet;

@@ -1,0 +1,46 @@
+"use client"
+import {
+    HoverCard,
+    HoverCardContent,
+    HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import { Skeleton } from "@/components/ui/skeleton"
+import {useBearActions, useMembers, useWebSocket} from "@/lib/providers/state-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {useEffect, useState} from "react";
+const MembersNav = () => {
+
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const socket = useWebSocket();
+    const members = useMembers();
+    const actions = useBearActions();
+
+    useEffect(() => {
+        if (members!.length > 0) {
+            setIsLoading(false);
+        }
+    }, [members]);
+
+    return <div className="ml-10 flex gap-2">
+        {
+            isLoading ? (<Skeleton className="h-12 w-12 rounded-full" />
+            ): (
+                members!.map((member, i) => (
+                <HoverCard key={i}>
+                    <HoverCardTrigger>
+                        <Avatar className={`${member.status ? "ring-green-300" : "ring-gray-400"}`}>
+                            <AvatarImage src="https://github.com/shadcn.png"/>
+                            <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                    </HoverCardTrigger>
+                    <HoverCardContent>
+                        {member.fullname}
+                    </HoverCardContent>
+                </HoverCard>
+            ))
+            )
+        }
+    </div>
+}
+
+export default MembersNav

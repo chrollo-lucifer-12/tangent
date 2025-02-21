@@ -1,9 +1,10 @@
 "use client"
 import {useEffect, useState} from "react";
+import {useBearActions} from "@/lib/providers/state-provider";
 
 
 const useSocket = () => {
-    const [socket,setSocket] = useState<WebSocket | null>(null)
+    const actions = useBearActions();
     const [isConnected, setIsConnected] = useState<boolean>(false);
     useEffect(() => {
         const newSocket = new WebSocket("ws://localhost:8080");
@@ -18,13 +19,14 @@ const useSocket = () => {
             console.log("disconnected");
         }
 
-        setSocket(newSocket);
+        actions.setSocket(newSocket);
 
         return () => {
             newSocket.close()
+            actions.setSocket(null);
         }
     },[])
-    return {socket,isConnected}
+    return {isConnected}
 }
 
 export default useSocket

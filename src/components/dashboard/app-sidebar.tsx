@@ -4,9 +4,6 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu
 } from "@/components/ui/sidebar"
@@ -60,7 +57,7 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
         <Sidebar collapsible="icon">
             <SidebarHeader>
                 <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces} collaboratingWorkspaces={collaboratingWorkspaces} defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]
-                    .find((workspace) => workspace.id === workspaceId)} userId={user.id}/>
+                    .find((workspace) => workspace.id === workspaceId)} userId={user.id} workspaceId={workspaceId}/>
             </SidebarHeader>
             <SidebarContent>
                 <FoldersDropdown workspaceId={workspaceId} workspaceFolders={data ? data : []} />

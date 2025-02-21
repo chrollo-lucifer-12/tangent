@@ -23,6 +23,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {useRouter} from "next/navigation";
+import CollaboratorsSheet from "@/components/dashboard/collaborators-sheet";
 
 
 interface WorkspaceDropdownProps {
@@ -30,28 +31,15 @@ interface WorkspaceDropdownProps {
     sharedWorkspaces : workspace[] | [],
     collaboratingWorkspaces : workspace[] | [],
     defaultValue : workspace | undefined,
-    userId : string
+    userId : string,
+    workspaceId : string
 }
 
-const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspaces, sharedWorkspaces, collaboratingWorkspaces, defaultValue, userId}) => {
-    const actions = useBearActions()
-    const privateStates = usePrivateWorkspaces();
-    const sharedStates = useSharedWorkspaces()
-    const collaboratingStates = useCollaboratingWorkspaces();
-    const router = useRouter();
+const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspaces, sharedWorkspaces, collaboratingWorkspaces, defaultValue, userId, workspaceId}) => {
 
-    useEffect(() => {
+    const router = useRouter()
 
-        actions.changePrivateWorkspaces(privateWorkspaces);
-
-
-        actions.changeSharedWorkspaces(sharedWorkspaces);
-
-
-        actions.changeCollaboratingWorkspaces(collaboratingWorkspaces);
-
-    }, []);
-
+    const [openSheet, setOpenSheet] = useState<boolean>(false)
 
     const [selectedOption, setSelectedOption] = useState(defaultValue);
     const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -66,7 +54,10 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
     const { isMobile } = useSidebar()
 
 
-    return <SidebarMenu>
+    return (
+    <>
+        <CollaboratorsSheet openSheet={openSheet} setOpenSheet={setOpenSheet} workspaceId={workspaceId} />
+    <SidebarMenu>
         <SidebarMenuItem>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -91,7 +82,7 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                 </DropdownMenuLabel>
                     {
                         [...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces].map((workspace,i) => (
-                            <DropdownMenuItem key={i}  className="gap-2 p-2">
+                            <DropdownMenuItem key={i}  className="gap-2 p-2" onClick={() => router.push(`/dashboard/${workspace.id}`)}>
                                 <div className="flex size-6 items-center justify-center rounded-sm border">
 
                                 </div>
@@ -106,18 +97,17 @@ const WorkspaceDropdown : React.FC<WorkspaceDropdownProps> =  ({privateWorkspace
                         </div>
                         <div className="font-medium text-muted-foreground">Add workspace</div>
                     </DropdownMenuItem>
-                    <Dialog open={isOpen}>
-                        <DialogTrigger asChild />
-                        <DialogTitle></DialogTitle>
-                        <DialogContent>
-
-                        <DashboardSetup userId={userId}/>
-                        </DialogContent>
-                    </Dialog>
+                    <DropdownMenuItem className="gap-2 p-2" onClick={() => setOpenSheet(true)}>
+                        <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                            <Plus className="size-4" />
+                        </div>
+                        <div className="font-medium text-muted-foreground">Add Members</div>
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </SidebarMenuItem>
     </SidebarMenu>
+    </>)
 }
 
 export default WorkspaceDropdown
