@@ -26,10 +26,8 @@ import {useBearActions} from "@/lib/providers/state-provider";
 
 export default function SignupPage({emailVerified} : {emailVerified : boolean}) {
     const [submitError, setSubmitError] = useState<string>('')
-    const [avatarUrl, setAvatarUrl] = useState<string>('');
-    const [fullName, setFullName] = useState<string>('')
-    const [steps, setSteps] = useState<number>(emailVerified ? 2 : 1);
-    const [isEmailVerified, setIsEmailVerified] = useState<boolean>(emailVerified);
+    const [steps] = useState<number>(emailVerified ? 2 : 1);
+    const [isEmailVerified] = useState<boolean>(emailVerified);
 
 
     const {register : signupSchemaRegister,  watch : signupSchemaWatch, handleSubmit : signupSchemaHandleSubmit, formState: {errors : signupSchemaErrors}} = useForm<z.infer<typeof signupSchema>>({

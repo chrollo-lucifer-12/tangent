@@ -1,6 +1,6 @@
+
 "use client"
 import {Folder} from "@/lib/supabase/supabase.types";
-import { toast } from "sonner";
 import React, {useEffect, useState} from "react";
 import {ChevronRight} from "lucide-react";
 import {useBearActions, useWebSocket, useWorkspaceFolders} from "@/lib/providers/state-provider";
@@ -14,10 +14,7 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
 
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
@@ -80,7 +77,7 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
 
     return (
         <>
-            <Dialog open={isOpen}>
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent>
                     <DialogTitle>Add Folder</DialogTitle>
                     <Input value={folderName} onChange={(e) => {setFolderName(e.target.value)}} />

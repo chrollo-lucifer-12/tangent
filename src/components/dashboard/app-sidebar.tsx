@@ -5,9 +5,7 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import {
     getCollaborativeWorkspaces,
     getFolders,
@@ -51,13 +49,13 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
     const collaboratingWorkspaces = await getCollaborativeWorkspaces(user.id);
     const sharedWorkspaces = await getSharedWorkspaces(user.id);
 
-    const {data,error} = await getFolders(workspaceId);
+    const {data} = await getFolders(workspaceId);
 
     return (
         <Sidebar collapsible="icon">
             <SidebarHeader>
                 <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces} collaboratingWorkspaces={collaboratingWorkspaces} defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]
-                    .find((workspace) => workspace.id === workspaceId)} userId={user.id} workspaceId={workspaceId}/>
+                    .find((workspace) => workspace.id === workspaceId)} workspaceId={workspaceId} userId={user.id} />
             </SidebarHeader>
             <SidebarContent>
                 <FoldersDropdown workspaceId={workspaceId} workspaceFolders={data ? data : []} />

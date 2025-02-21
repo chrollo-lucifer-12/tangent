@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import React from "react";
 import {useFolder, usePage, useWorkspace} from "@/lib/providers/state-provider";
-import {Button} from "@/components/ui/button";
 import MembersNav from "@/components/dashboard/members-nav";
 
 const SidebarHeaderBreadCrumb = () => {

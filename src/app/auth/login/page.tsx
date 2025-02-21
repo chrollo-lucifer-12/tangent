@@ -86,6 +86,8 @@ export default function LoginPage() {
                             <Button
                                 variant="outline"
                                 className="w-full flex flex-row items-center dark:bg-[#18181a] text-[#dcdcdd] hover:ring-2 transition duration-150"
+                                type="button"
+                                onClick={loginGithub}
                             >
                                 <span>Login with Github</span>
                                 <Image src={githublogo} alt="github logo" className="w-6 h-6"/>

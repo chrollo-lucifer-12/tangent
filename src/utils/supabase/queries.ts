@@ -1,5 +1,4 @@
 "use server"
-
 import {v4, validate} from "uuid";
 import {createClient} from "@/utils/supabase/server";
 import db from "@/lib/supabase/db";
@@ -133,6 +132,7 @@ export async function getFolders (workspaceId : string) {
             .where(eq(folders.workspaceId, workspaceId));
         return { data: results, error: null };
     } catch (error) {
+        console.log(error);
         return { data: null, error: 'Error' };
     }
 }
@@ -147,6 +147,7 @@ export async function getPages (folderId : string) {
         const res : File[] | [] = await db.select().from(files).where(eq(files.folderId,folderId));
         return res;
     } catch (e) {
+        console.log(e);
         return [];
     }
 }
@@ -259,6 +260,7 @@ async function ensureContainerRunning() {
                 await container.start();
             }
         } catch (error) {
+            console.log(error);
             container = await docker.createContainer({
                 Image: "node:18-alpine",
                 name: CONTAINER_NAME,

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, {useCallback, useEffect, useState} from "react";
@@ -97,8 +98,8 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}
     }, [])
 
     return <>
-        <div className="flex justify-center items-center relative mt-2 items-center ">
-            <div id="container" className="w-full h-screen border-0 border-none focus:border-none" ref={wrappedRef} style={{border : "none"}}>
+        <div className="flex justify-center relative mt-2 items-center overflow-x-hidden w-screen h-screen">
+            <div id="container" className="w-[70%] h-[80vh] ring-0 border-none o" ref={wrappedRef}>
             </div>
         </div>
     </>

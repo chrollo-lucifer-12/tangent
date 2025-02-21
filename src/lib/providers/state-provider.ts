@@ -1,5 +1,6 @@
-import { create } from 'zustand'
+
 import {Folder, workspace, File} from "@/lib/supabase/supabase.types";
+import {create} from "zustand/react";
 
 type userState = {
     email : string,

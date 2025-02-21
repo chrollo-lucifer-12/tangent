@@ -16,7 +16,7 @@ const Page = () => {
             actions.setMembers(members);
         }
         setTitle();
-    }, []);
+    });
 
     return <div>
 

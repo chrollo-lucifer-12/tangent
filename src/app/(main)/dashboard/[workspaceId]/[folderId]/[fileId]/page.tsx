@@ -12,7 +12,6 @@ const Page =  () => {
 
     const params : {workspaceId : string, folderId : string, fileId : string} = useParams();
     const actions = useBearActions();
-    const fileName = usePage()
     const {isConnected} = useSocket();
     const supabase = createClient();
     const socket = useWebSocket();
@@ -54,13 +53,12 @@ const Page =  () => {
             actions.setMembers(membersWithStatus);
         }
         setTitle()
-    }, []);
+    },[]);
 
     return <div className="w-screen h-screen">
         <div className="w-full h-[40%] bg-blue-200 rounded-lg">
 
         </div>
-        <Input value={fileName} className="border-none h-fit font-bold text-9xl leading-none" />
         <QuillEditor fileId={params.fileId} folderId={params.folderId} workspaceId={params.workspaceId} />
         {/*<FlowEditor fileId={params.fileId} folderId={params.folderId} workspaceId={params.workspaceId} />*/}
     </div>

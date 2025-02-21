@@ -10,6 +10,7 @@ import {v4} from "uuid"
 import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
+import {Skeleton} from "@/components/ui/skeleton";
 interface FolderPagesClientProps {
     folderId : string
     workspaceId : string
@@ -20,27 +21,32 @@ const FolderPagesClient : React.FC<FolderPagesClientProps> = ({ workspaceId, fol
     const actions = useBearActions();
     const pages = usePages();
     const socket = useWebSocket();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const [pageName, setPageName] = useState<string>("")
+    const [localPages, setLocalPages] = useState<File[]>(pages);
 
     useEffect(() => {
+        setIsLoading(true);
         async function fetchPage () {
             const pages = await getPages(folderId);
             actions.changePages(pages);
+            setLocalPages(pages);
         }
+        setIsLoading(false);
         fetchPage();
     }, [folderId]);
 
 useEffect(() => {
-
         socket?.addEventListener("message", (messageEvent) => {
             const message = JSON.parse(messageEvent.data);
             if (message.type === "add_page") {
                 const newPages = [...pages, message.page];
+                setLocalPages(newPages);
                 actions.changePages(newPages);
             }
         })
-    },[socket,pages])
+    },[socket])
 
     const router = useRouter();
 
@@ -72,10 +78,12 @@ useEffect(() => {
     return (
         <SidebarMenuSub>
             {
-                pages.map((page,i) => (
+                localPages.map((page,i) => (
                     <SidebarMenuSubItem key={i} >
                         <SidebarMenuSubButton asChild className="flex justify-between">
-                            <span>{page.title} <ExternalLink className="hover:text-blue-500 transition duration-200" onClick={() => handleRedirect(page.id)} /></span>
+                            {
+                                isLoading ? (<Skeleton className="h-4 w-[250px]" />) : (<span>{page.title} <ExternalLink className="hover:text-blue-500 transition duration-200" onClick={() => handleRedirect(page.id)} /></span>)
+                            }
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                 ))

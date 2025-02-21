@@ -15,7 +15,7 @@ const Page =  () => {
             actions.setFolderName(data);
         }
         setTitle();
-    }, []);
+    },[]);
 
     return <div>
 

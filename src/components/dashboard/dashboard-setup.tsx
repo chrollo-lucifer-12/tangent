@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { workspaceSchema } from "@/utils/constants";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import React from "react";
 import {createWorkspace, revalidateDashboard} from "@/utils/supabase/queries";
 import {Label} from "@/components/ui/label";
 import {Separator} from "@/components/ui/separator";
@@ -18,7 +18,7 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
         register,
         handleSubmit,
         reset,
-        formState: {isSubmitting: isLoading, errors},
+        formState: {isSubmitting: isLoading},
     } = useForm<z.infer<typeof workspaceSchema>>({
         defaultValues: {},
     });
@@ -32,7 +32,6 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
 
     return (
         <>
-            {/*<CollaboratorsSheet openSheet={openSheet} setOpenSheet={setOpenSheet} addedMembers={addedMembers} setAddedMembers={setAddedMembers} />*/}
         <div className="flex justify-center items-center">
             <Card
                 className="border-none bg-transparent p-0 m-0">
