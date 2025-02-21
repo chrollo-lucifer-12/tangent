@@ -249,3 +249,11 @@ export async function getEditorContent (fileId : string) {
         console.log(e);
     }
 }
+
+export async function updateEditorContent(workspaceId : string, folder : string, fileId : string, contents : string) {
+    try {
+        await db.update(files).set({data:  contents}).where(eq(files.id,fileId))
+    } catch (e) {
+        console.log(e);
+    }
+}

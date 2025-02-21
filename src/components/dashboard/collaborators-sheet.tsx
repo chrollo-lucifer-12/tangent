@@ -11,7 +11,7 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command";
-
+import {toast} from "sonner"
 import React, { useEffect, useState } from "react";
 import {addColaborator, searchEmails} from "@/utils/supabase/queries";
 import { Input } from "@/components/ui/input";
@@ -60,8 +60,10 @@ const CollaboratorsSheet: React.FC<CollaboratorsSheetProps> = ({
         email: string | null;
         image: string | null
     }) => {
-        console.log("collab");
+
         await addColaborator(workspaceId, collaborator.id!);
+        toast("User has been added to workspace.")
+        setOpenSheet(false);
     };
 
     return (

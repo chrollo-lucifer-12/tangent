@@ -10,6 +10,7 @@ import React from "react";
 import {createWorkspace, revalidateDashboard} from "@/utils/supabase/queries";
 import {Label} from "@/components/ui/label";
 import {Separator} from "@/components/ui/separator";
+import {toast} from "sonner";
 
 
 const DashboardSetup = ({ userId }: { userId: string }) => {
@@ -27,6 +28,7 @@ const DashboardSetup = ({ userId }: { userId: string }) => {
         const file = values.file?.[0];
         await createWorkspace(values.workspaceName, file, userId);
         reset();
+        toast("Workspace has been created.")
         await revalidateDashboard();
     }
 

@@ -25,9 +25,12 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar"
+import {createClient} from "@/utils/supabase/client";
 
 export function NavUser({imageUrl, fullname, email} : {imageUrl : string, fullname : string, email : string}) {
     const { isMobile } = useSidebar()
+
+    const supabase = createClient();
 
     return (
         <SidebarMenu>
@@ -68,7 +71,9 @@ export function NavUser({imageUrl, fullname, email} : {imageUrl : string, fullna
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => {
+                            await supabase.auth.signOut({scope : "local"});
+                        }}>
                             <LogOut />
                             Log out
                         </DropdownMenuItem>

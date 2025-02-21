@@ -11,6 +11,7 @@ import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTr
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Skeleton} from "@/components/ui/skeleton";
+import {toast} from "sonner";
 interface FolderPagesClientProps {
     folderId : string
     workspaceId : string
@@ -68,6 +69,7 @@ useEffect(() => {
             folderId
         }
         await createPage(newPage);
+        toast("Page created.");
         socket?.send(JSON.stringify({
             type : "add_page",
             page : newPage,
@@ -105,7 +107,7 @@ useEffect(() => {
                         onChange={(e) => setPageName(e.target.value)}
                     />
                     <DialogFooter>
-                        <Button onClick={handleCreatePage}>Create</Button>
+                        <Button onClick={handleCreatePage} className="w-full bg-white text-black hover:bg-gray-200">Create</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

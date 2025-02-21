@@ -17,6 +17,7 @@ import FoldersDropdown from "@/components/dashboard/folders-dropdown";
 import WorkspaceDropdown from "@/components/dashboard/workspace-dropdown";
 import {NavUser} from "@/components/dashboard/nav-user";
 import Terminal from "@/components/dashboard/terminal";
+import {redirect} from "next/navigation";
 
 const getCachedUser = cache(async () => {
     const supabase = await createClient()
@@ -40,14 +41,12 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
 
     if (!user) {
         //console.log("No user found, returning early")
-        return <div>
-            no user found
-        </div>
+        redirect("/auth/login");
     }
 
-    const privateWorkspaces = await getPrivateWorkspaces(user.id);
-    const collaboratingWorkspaces = await getCollaborativeWorkspaces(user.id);
-    const sharedWorkspaces = await getSharedWorkspaces(user.id);
+    const privateWorkspaces = await getPrivateWorkspaces(user!.id);
+    const collaboratingWorkspaces = await getCollaborativeWorkspaces(user!.id);
+    const sharedWorkspaces = await getSharedWorkspaces(user!.id);
 
     const {data} = await getFolders(workspaceId);
 
@@ -55,7 +54,7 @@ export async function AppSidebar({ workspaceId }: { workspaceId: string }) {
         <Sidebar collapsible="icon">
             <SidebarHeader>
                 <WorkspaceDropdown privateWorkspaces={privateWorkspaces} sharedWorkspaces={sharedWorkspaces} collaboratingWorkspaces={collaboratingWorkspaces} defaultValue={[...privateWorkspaces, ...sharedWorkspaces, ...collaboratingWorkspaces]
-                    .find((workspace) => workspace.id === workspaceId)} workspaceId={workspaceId} userId={user.id} />
+                    .find((workspace) => workspace.id === workspaceId)} workspaceId={workspaceId} userId={user!.id} />
             </SidebarHeader>
             <SidebarContent>
                 <FoldersDropdown workspaceId={workspaceId} workspaceFolders={data ? data : []} />

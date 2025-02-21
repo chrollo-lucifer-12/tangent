@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {useRouter} from "next/navigation";
 import CollaboratorsSheet from "@/components/dashboard/collaborators-sheet";
-import {Dialog, DialogContent, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
+import {Dialog, DialogContent, DialogTitle} from "@/components/ui/dialog";
 import DashboardSetup from "@/components/dashboard/dashboard-setup";
 import Image from "next/image";
 

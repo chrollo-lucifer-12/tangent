@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useMembers} from "@/lib/providers/state-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {useEffect, useState} from "react";
-import {createClient} from "@/utils/supabase/client";
 const MembersNav = () => {
 
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -21,7 +20,6 @@ const MembersNav = () => {
         }
     }, [members]);
 
-    console.log(members);
 
     return <div className="ml-10 flex gap-2">
         {
@@ -31,7 +29,7 @@ const MembersNav = () => {
                 <HoverCard key={i}>
                     <HoverCardTrigger>
                         <Avatar>
-                            <AvatarImage />
+                            <AvatarImage src={member.imageUrl || "https://github.com/shadcn.png"} />
                             <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
                     </HoverCardTrigger>

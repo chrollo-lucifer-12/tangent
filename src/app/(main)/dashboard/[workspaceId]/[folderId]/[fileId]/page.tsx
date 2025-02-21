@@ -55,7 +55,7 @@ const Page =  () => {
         setTitle()
     },[]);
 
-    return <div className="w-screen h-screen">
+    return <div className="w-full h-full">
         <div className="w-full h-[40%] bg-blue-200 rounded-lg">
 
         </div>

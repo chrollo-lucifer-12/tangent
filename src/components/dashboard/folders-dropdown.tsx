@@ -27,6 +27,7 @@ interface FoldersDropdownProps {
     workspaceFolders : Folder[]
 }
 import {v4} from "uuid"
+import {toast} from "sonner";
 const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspaceFolders}) => {
 
     const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -48,7 +49,7 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
             const message = JSON.parse(messageEvent.data);
             if (message.type === "add_folder") {
                 const newFolders = [...folders, message.folder];
-                console.log(newFolders);
+
                 actions.changeworkspaceFolders(newFolders);
             }
         })
@@ -72,6 +73,7 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
             folder : newFolder,
             workspaceId
         }))
+        toast("Folder has been created.")
         setIsOpen(false);
     }
 
@@ -80,8 +82,8 @@ const FoldersDropdown : React.FC<FoldersDropdownProps> = ({workspaceId,workspace
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent>
                     <DialogTitle>Add Folder</DialogTitle>
-                    <Input value={folderName} onChange={(e) => {setFolderName(e.target.value)}} />
-                    <Button onClick={handleAddFolder} >Create</Button>
+                    <Input value={folderName} className="ring-0 focus:ring-0" onChange={(e) => {setFolderName(e.target.value)}} />
+                    <Button onClick={handleAddFolder} className="bg-white text-black hover:bg-gray-200">Create</Button>
                 </DialogContent>
             </Dialog>
         <SidebarGroup>

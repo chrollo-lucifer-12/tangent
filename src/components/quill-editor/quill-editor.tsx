@@ -43,46 +43,54 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}
         fetchEditorData();}
     },[quill])
 
-    useEffect(() => {
-        if (!quill) return;
 
-        const handleTextChange = async (delta: any, oldDelta: any, source: string) => {
-            if (source === "user") {
-                socket?.send(JSON.stringify({
-                     type: "update_editor",
-                     data: quill.getContents().ops,
-                     workspaceId,
-                     folderId,
-                     fileId
-                }));
-                await updateEditorContent(folderId, fileId, workspaceId, JSON.stringify(quill.getContents().ops))
-            }
-        };
+        useEffect(() => {
+            if (!quill) return;
 
-        function messageHandler(event : any) {
-            const message = JSON.parse(event.data);
-            if (message.type === "update_editor") {
-                if (workspaceId === message.workspaceId && folderId === message.folderId && fileId === message.fileId) {
-                    const selection = quill.getSelection();
-                    quill.setContents({ops: message.data})
-                    if (selection) {
-                        quill.setSelection(selection);
+            let updateTimeout: NodeJS.Timeout | null = null;
+
+            const handleTextChange = async (delta: any, oldDelta: any, source: string) => {
+                if (source === "user") {
+                    if (updateTimeout) clearTimeout(updateTimeout);
+
+                    updateTimeout = setTimeout(async () => {
+                        socket?.send(JSON.stringify({
+                            type: "update_editor",
+                            data: quill.getContents().ops,
+                            workspaceId,
+                            folderId,
+                            fileId
+                        }));
+                        await updateEditorContent(workspaceId, folderId, fileId, JSON.stringify(quill.getContents().ops));
+                    }, 1000);
+                }
+            };
+
+            function messageHandler(event: any) {
+                const message = JSON.parse(event.data);
+                if (message.type === "update_editor") {
+                    if (workspaceId === message.workspaceId && folderId === message.folderId && fileId === message.fileId) {
+                        const selection = quill.getSelection();
+                        quill.setContents({ ops: message.data });
+                        if (selection) {
+                            quill.setSelection(selection);
+                        }
                     }
                 }
             }
-        }
 
-        socket?.addEventListener("message", messageHandler);
+            socket?.addEventListener("message", messageHandler);
+            quill.on('text-change', handleTextChange);
 
-        quill.on('text-change', handleTextChange);
+            return () => {
+                quill.off('text-change', handleTextChange);
+                socket?.removeEventListener("message", messageHandler);
+                if (updateTimeout) clearTimeout(updateTimeout);
+            };
+        }, [quill]);
 
-        return () => {
-            quill.off('text-change', handleTextChange);
-            socket?.removeEventListener("message", messageHandler);
-        };
-    }, [quill,socket]);
 
-    const wrappedRef = useCallback(async (wrapper : any) => {
+        const wrappedRef = useCallback(async (wrapper : any) => {
         if (!wrapper) return;
         wrapper.innerHTML = ""
         const editor = document.createElement("div");
@@ -98,8 +106,9 @@ const QuillEditor : React.FC<QuillEditorProps> = ({fileId, folderId,workspaceId}
     }, [])
 
     return <>
-        <div className="flex justify-center relative mt-2 items-center overflow-x-hidden w-screen h-screen">
-            <div id="container" className="w-[70%] h-[80vh] ring-0 border-none o" ref={wrappedRef}>
+
+        <div className="h-screen bg-black">
+            <div id="container " className="h-full" ref={wrappedRef}>
             </div>
         </div>
     </>
